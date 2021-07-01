@@ -46,7 +46,6 @@ cd ~/sources/Fast-RTPS-Gen
 ./gradlew assemble
 sudo ./gradlew install
 cd ~/ros2_ws/
-echo "export _colcon_cd_root=~/ros2_ws" >> ~/.bashrc
 cd ~/ros2_ws/src/px4_ros_com/scripts
 sudo bash build_ros2_workspace.bash
 sudo pip3 install -U pyros-genmsg setuptools
