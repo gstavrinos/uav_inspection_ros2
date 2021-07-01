@@ -4,8 +4,9 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 sudo sh -c 'echo "deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list'
 curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 sudo apt update
-sudo apt install ros-galactic-desktop ros-galactic-ros1-bridge ros-galactic-rqt* ros-galactic-eigen3-cmake-module python3-colcon-common-extensions python3-rosdep python3-empy -y
+sudo apt install ros-galactic-desktop ros-galactic-rqt* ros-galactic-eigen3-cmake-module python3-colcon-common-extensions python3-rosdep python3-empy -y
 . /opt/ros/galactic/setup.bash
+sudo rosdep init
 rosdep update
 echo "alias rosdep_install='rosdep install -i --from-path src --rosdistro galactic -y'" >> ~/.bashrc
 echo "source /opt/ros/galactic/setup.bash" >> ~/.bashrc
