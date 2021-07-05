@@ -1,0 +1,22 @@
+version: '3.4'
+services:
+    simulation:
+        image : ros2_px4
+        stdin_open: true
+        network_mode: host
+        command: bash -c "cd ~/sources/PX4-Autopilot/ && HEADLESS=1 make px4_sitl_rtps gazebo"
+        volumes:
+            - "/etc/timezone:/etc/timezone:ro"
+            - "/etc/localtime:/etc/localtime:ro"
+    micrortps_agent:
+        image : ros2_px4
+        stdin_open: true
+        network_mode: host
+        depends_on:
+            - simulation
+        command: bash -c "sleep 10; source ~/ros2_ws/install/setup.bash && micrortps_agent -t UDP"
+        volumes:
+            - "/etc/timezone:/etc/timezone:ro"
+            - "/etc/localtime:/etc/localtime:ro"
+
+
