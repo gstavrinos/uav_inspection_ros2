@@ -19,9 +19,9 @@ echo "export _colcon_cd_root=~/ros2_ws" >> ~/.bashrc
 mkdir -p ~/ros2_ws/src
 mkdir ~/sources
 cd ~/ros2_ws/src
-rm -rf uav_inspection_ros2
-rm -rf px4_ros_com
-rm -rf px4_msgs
+rm -rf ~/ros2_ws/src/uav_inspection_ros2
+rm -rf ~/ros2_ws/src/px4_ros_com
+rm -rf ~/ros2_ws/src/px4_msgs
 rm -rf ~/sources/foonathan_memory_vendor
 rm -rf ~/sources/Fast-RTPS-Gen 
 rm -rf ~/sources/FastDDS-2.0.0 
@@ -47,7 +47,6 @@ sudo make install
 cd ~/sources/Fast-RTPS-Gen
 ./gradlew assemble
 sudo ./gradlew install
-cd ~/ros2_ws/
 cd ~/ros2_ws/src/px4_ros_com/scripts
 sudo bash build_ros2_workspace.bash
 cd ~/sources/PX4-Autopilot
