@@ -4,7 +4,8 @@ services:
         image : ros2_px4
         stdin_open: true
         network_mode: host
-        command: bash -c "cd ~/sources/PX4-Autopilot/ && HEADLESS=1 make px4_sitl_rtps gazebo"
+        # command: bash -c "cd ~/sources/PX4-Autopilot/ && HEADLESS=1 make px4_sitl_rtps gazebo"
+        command: bash -c "HEADLESS=1 bash ~/sources/PX4-Autopilot/Tools/sitl_run.sh ~/sources/PX4-Autopilot/build/px4_sitl_rtps/bin/px4 none gazebo iris none ~/sources/PX4-Autopilot ~/sources/PX4-Autopilot/build/px4_sitl_rtps"
         volumes:
             - "/etc/timezone:/etc/timezone:ro"
             - "/etc/localtime:/etc/localtime:ro"
