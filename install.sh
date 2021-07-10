@@ -5,7 +5,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 sudo sh -c 'echo "deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list'
 curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 sudo apt-get update
-sudo apt-get install ros-galactic-desktop ros-galactic-rqt* ros-galactic-eigen3-cmake-module python3-colcon-common-extensions python3-rosdep python3-empy dmidecode gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-libav libeigen3-dev libgazebo11-dev libgstreamer-plugins-base1.0-dev libimage-exiftool-perl libopencv-dev libxml2-utils pkg-config protobuf-compiler gradle -y
+sudo apt-get install ros-galactic-desktop ros-galactic-rqt* ros-galactic-eigen3-cmake-module ros-galactic-joint-state-publisher python3-colcon-common-extensions python3-rosdep python3-empy python-numpy dmidecode gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-libav libeigen3-dev libgazebo11-dev libgstreamer-plugins-base1.0-dev libimage-exiftool-perl libopencv-dev libxml2-utils pkg-config protobuf-compiler gradle -y
 sudo pip3 install -U pyros-genmsg setuptools jinja2 argcomplete argparse cerberus coverage matplotlib numpy nunavut packaging pandas pkgconfig pygments wheel pymavlink pyserial pyulog requests six toml
 . /opt/ros/galactic/setup.bash
 sudo rosdep init
