@@ -51,3 +51,4 @@ cd ~/ros2_ws/src/px4_ros_com/scripts
 sudo bash build_ros2_workspace.bash
 cd ~/sources/PX4-Autopilot
 DONT_RUN=1 make px4_sitl_rtps gazebo
+sudo apt-get install -y ros-galactic-gazebo-ros-pkgs 
