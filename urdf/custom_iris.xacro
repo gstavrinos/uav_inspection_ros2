@@ -1,0 +1,327 @@
+<?xml version="1.0"?>
+<robot name="iris" xmlns:xacro="http://ros.org/wiki/xacro">
+    <material name="gray">
+        <color rgba="0.2 0.2 0.2 1"/>
+    </material>
+
+    <material name="yellow">
+        <color rgba="0.7 0.7 0 1"/>
+    </material>
+
+    <material name="orange">
+        <color rgba="0.7 0.2 0 1"/>
+    </material>
+
+    <!-- Base -->
+    <link name="base_link"/>
+
+    <link name="chassis_link">
+        <inertial>
+            <mass value="1.5" />
+            <origin xyz="0 0 0"/>
+            <inertia ixx="0.029125" ixy="0.0" ixz="0.0" iyy="0.029125" iyz="0.0" izz="0.055225" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris.stl"/>
+            </geometry>
+            <material name="gray"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris.stl"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="chassis_joint" type="fixed">
+    <origin xyz="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="chassis_link"/>
+    </joint>
+
+    <!-- Rotors -->
+    <link name="rotor_0">
+        <inertial>
+            <mass value="0.005" />
+            <origin xyz="0 0 0"/>
+            <inertia ixx="9.75e-07" ixy="0.0" ixz="0.0" iyy="0.000273104" iyz="0.0" izz="0.000273104" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_ccw.stl"/>
+            </geometry>
+            <material name="orange"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_ccw.stl"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="rotor_0_joint" type="revolute">
+        <axis xyz="0 0 1"/>
+        <limit lower="-1000000000000" upper="100000000000" effort="10" velocity="30"/>
+        <origin xyz="0.13 -0.22 0.023" rpy="0 0 0" />
+        <parent link="base_link"/>
+        <child link="rotor_0" />
+    </joint>
+
+    <link name="rotor_1">
+        <inertial>
+            <mass value="0.005" />
+            <origin xyz="0 0 0"/>
+            <inertia ixx="9.75e-07" ixy="0.0" ixz="0.0" iyy="0.000273104" iyz="0.0" izz="0.000273104" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_ccw.stl"/>
+            </geometry>
+            <material name="yellow"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_ccw.stl"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="rotor_1_joint" type="revolute">
+        <axis xyz="0 0 1"/>
+        <limit lower="-1000000000000" upper="100000000000" effort="10" velocity="30"/>
+        <origin xyz="-0.13 0.22 0.023" rpy="0 0 0" />
+        <parent link="base_link"/>
+        <child link="rotor_1" />
+    </joint>
+
+    <link name="rotor_2">
+        <inertial>
+            <mass value="0.005" />
+            <origin xyz="0 0 0"/>
+            <inertia ixx="9.75e-07" ixy="0.0" ixz="0.0" iyy="0.000273104" iyz="0.0" izz="0.000273104" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_cw.stl"/>
+            </geometry>
+            <material name="orange"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_cw.stl"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="rotor_2_joint" type="revolute">
+        <axis xyz="0 0 1"/>
+        <limit lower="-1000000000000" upper="100000000000" effort="10" velocity="30"/>
+        <origin xyz="0.13 0.22 0.023" rpy="0 0 0" />
+        <parent link="base_link"/>
+        <child link="rotor_2" />
+    </joint>
+
+    <link name="rotor_3">
+        <inertial>
+            <mass value="0.005" />
+            <origin xyz="0 0 0"/>
+            <inertia ixx="9.75e-07" ixy="0.0" ixz="0.0" iyy="0.000273104" iyz="0.0" izz="0.000273104" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_cw.stl"/>
+            </geometry>
+            <material name="yellow"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_cw.stl"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="rotor_3_joint" type="revolute">
+        <axis xyz="0 0 1"/>
+        <limit lower="-1000000000000" upper="100000000000" effort="10" velocity="30"/>
+        <origin xyz="-0.13 -0.22 0.023" rpy="0 0 0" />
+        <parent link="base_link"/>
+        <child link="rotor_3" />
+    </joint>
+
+    <!-- Sensors -->
+    <link name="camera_link"/>
+
+    <joint name="camera_joint" type="fixed">
+      <origin xyz="0.05 0 -0.05" rpy="0 0 0" />
+      <parent link="base_link"/>
+      <child link="camera_link" />
+    </joint>
+
+    <link name="imu_link"/>
+
+    <joint name="imu_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="base_link"/>
+      <child link="imu_link" />
+    </joint>
+
+    <link name="gps_link"/>
+
+    <joint name="gps_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="base_link"/>
+      <child link="gps_link" />
+    </joint>
+    
+    <link name="magnetometer_link"/>
+
+    <joint name="magnetometer_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="base_link"/>
+      <child link="magnetometer_link" />
+    </joint>
+
+    <link name="barometer_link"/>
+
+    <joint name="barometer_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="base_link"/>
+      <child link="barometer_link" />
+    </joint>
+
+
+    <!-- Gazebo -->
+    <gazebo reference="chassis_link">
+       <material>Gazebo/Grey</material>
+    </gazebo>
+
+    <gazebo reference="rotor_0">
+       <material>Gazebo/Orange</material>
+    </gazebo>
+
+    <gazebo reference="rotor_1">
+       <material>Gazebo/Yellow</material>
+    </gazebo>
+
+    <gazebo reference="rotor_2">
+       <material>Gazebo/Orange</material>
+    </gazebo>
+
+    <gazebo reference="rotor_3">
+       <material>Gazebo/Yellow</material>
+    </gazebo>
+
+    <plugin name="ground_truth_odom" filename="libgazebo_ros_p3d.so">
+
+        <ros>
+            <argument>odom:=odom/perfect</argument>
+        </ros>
+
+        <body_name>base_link</body_name>
+        <frame_name>odom</frame_name>
+        <update_rate>1</update_rate>
+        <xyz_offset>0 0 0</xyz_offset>
+        <rpy_offset>0 0 0</rpy_offset>
+        <gaussian_noise>0</gaussian_noise>
+
+    </plugin>
+
+
+    <gazebo reference="camera_link">
+    <sensor type="depth" name="camera">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+      <camera name="camera">
+        <horizontal_fov>1.2</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <depth_camera>
+        </depth_camera>
+        <clip>
+          <near>0.02</near>
+          <far>100</far>
+        </clip>
+        <distortion>
+          <k1>0.0</k1>
+          <k2>0.0</k2>
+          <k3>0.0</k3>
+          <p1>0.0</p1>
+          <p2>0.0</p2>
+        </distortion>
+      </camera>
+      <plugin name="simulated_camera" filename="libgazebo_ros_camera.so">
+        <camera_name>camera</camera_name>
+        <frame_name>camera_link</frame_name>
+        <hack_baseline>0.07</hack_baseline>
+        <min_depth>0.001</min_depth>
+      </plugin>
+    </sensor>
+    </gazebo>
+
+    <gazebo reference="imu_link">
+    <sensor name="imu" type="imu">
+    <always_on>true</always_on>
+    <update_rate>30</update_rate>
+    <plugin name="simulated_imu" filename="libgazebo_ros_imu_sensor.so">
+        <ros>
+            <namespace>/imu</namespace>
+            <argument>~/out:=data</argument>
+         </ros>
+        <frame_name>imu_link</frame_name>
+    </plugin>
+    </sensor>
+    </gazebo>
+
+    <!-- Transmissions (not sure if needed yet)-->
+  <!-- <transmission name="rotor_0_trans"> -->
+    <!-- <type>transmission_interface/SimpleTransmission</type> -->
+    <!-- <actuator name="rotor_0"> -->
+      <!-- <mechanicalReduction>1</mechanicalReduction> -->
+    <!-- </actuator> -->
+    <!-- <joint name="rotor_0_joint"> -->
+      <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
+    <!-- </joint> -->
+  <!-- </transmission> -->
+  <!-- <transmission name="rotor_1_trans"> -->
+    <!-- <type>transmission_interface/SimpleTransmission</type> -->
+    <!-- <actuator name="rotor_1"> -->
+      <!-- <mechanicalReduction>1</mechanicalReduction> -->
+    <!-- </actuator> -->
+    <!-- <joint name="rotor_1_joint"> -->
+      <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
+    <!-- </joint> -->
+  <!-- </transmission> -->
+  <!-- <transmission name="rotor_2_trans"> -->
+    <!-- <type>transmission_interface/SimpleTransmission</type> -->
+    <!-- <actuator name="rotor_2"> -->
+      <!-- <mechanicalReduction>1</mechanicalReduction> -->
+    <!-- </actuator> -->
+    <!-- <joint name="rotor_2_joint"> -->
+      <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
+    <!-- </joint> -->
+  <!-- </transmission> -->
+  <!-- <transmission name="rotor_3_trans"> -->
+    <!-- <type>transmission_interface/SimpleTransmission</type> -->
+    <!-- <actuator name="rotor_3"> -->
+      <!-- <mechanicalReduction>1</mechanicalReduction> -->
+    <!-- </actuator> -->
+    <!-- <joint name="rotor_3_joint"> -->
+      <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
+    <!-- </joint> -->
+  <!-- </transmission> -->
+
+</robot>
