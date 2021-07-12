@@ -19,12 +19,12 @@ echo "export _colcon_cd_root=~/ros2_ws" >> ~/.bashrc
 mkdir -p ~/ros2_ws/src
 mkdir ~/sources
 cd ~/ros2_ws/src
-rm -rf ~/ros2_ws/src/uav_inspection_ros2
-rm -rf ~/ros2_ws/src/px4_ros_com
-rm -rf ~/ros2_ws/src/px4_msgs
-rm -rf ~/sources/foonathan_memory_vendor
-rm -rf ~/sources/Fast-RTPS-Gen 
-rm -rf ~/sources/FastDDS-2.0.0 
+sudo rm -rf ~/ros2_ws/src/uav_inspection_ros2
+sudo rm -rf ~/ros2_ws/src/px4_ros_com
+sudo rm -rf ~/ros2_ws/src/px4_msgs
+sudo rm -rf ~/sources/foonathan_memory_vendor
+sudo rm -rf ~/sources/Fast-RTPS-Gen 
+sudo rm -rf ~/sources/FastDDS-2.0.0 
 git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_inspections_ros2
 git clone https://github.com/PX4/px4_ros_com ~/ros2_ws/src/px4_ros_com
 git clone https://github.com/PX4/px4_msgs ~/ros2_ws/src/px4_msgs
