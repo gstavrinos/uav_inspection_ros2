@@ -23,13 +23,14 @@ sudo rm -rf ~/ros2_ws/src/uav_inspection_ros2
 sudo rm -rf ~/ros2_ws/src/px4_ros_com
 sudo rm -rf ~/ros2_ws/src/px4_msgs
 sudo rm -rf ~/sources/foonathan_memory_vendor
+sudo rm -rf ~/sources/PX4-Autopilot
 sudo rm -rf ~/sources/Fast-RTPS-Gen 
 sudo rm -rf ~/sources/FastDDS-2.0.0 
 git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_inspections_ros2
 git clone https://github.com/PX4/px4_ros_com ~/ros2_ws/src/px4_ros_com
 git clone https://github.com/PX4/px4_msgs ~/ros2_ws/src/px4_msgs
 git clone https://github.com/eProsima/foonathan_memory_vendor.git ~/sources/foonathan_memory_vendor
-git clone --recursive https://github.com/PX4/PX4-Autopilot.git ~/sources/PX4-Autopilot
+git clone --recursive https://github.com/PX4/PX4-Autopilot.git -b release/1.12 ~/sources/PX4-Autopilot
 git clone --recursive https://github.com/eProsima/Fast-DDS.git -b v2.0.0 ~/sources/FastDDS-2.0.0
 git clone --recursive https://github.com/eProsima/Fast-DDS-Gen.git -b v1.0.4 ~/sources/Fast-RTPS-Gen
 . ~/.bashrc
