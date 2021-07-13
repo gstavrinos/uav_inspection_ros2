@@ -64,9 +64,8 @@
         </collision>
     </link>
 
-    <joint name="rotor_0_joint" type="revolute">
+    <joint name="rotor_0_joint" type="continuous">
         <axis xyz="0 0 1"/>
-        <limit lower="-1000000000000" upper="100000000000" effort="10" velocity="30"/>
         <origin xyz="0.13 -0.22 0.023" rpy="0 0 0" />
         <parent link="base_link"/>
         <child link="rotor_0" />
@@ -93,9 +92,8 @@
         </collision>
     </link>
 
-    <joint name="rotor_1_joint" type="revolute">
+    <joint name="rotor_1_joint" type="continuous">
         <axis xyz="0 0 1"/>
-        <limit lower="-1000000000000" upper="100000000000" effort="10" velocity="30"/>
         <origin xyz="-0.13 0.22 0.023" rpy="0 0 0" />
         <parent link="base_link"/>
         <child link="rotor_1" />
@@ -122,9 +120,8 @@
         </collision>
     </link>
 
-    <joint name="rotor_2_joint" type="revolute">
+    <joint name="rotor_2_joint" type="continuous">
         <axis xyz="0 0 1"/>
-        <limit lower="-1000000000000" upper="100000000000" effort="10" velocity="30"/>
         <origin xyz="0.13 0.22 0.023" rpy="0 0 0" />
         <parent link="base_link"/>
         <child link="rotor_2" />
@@ -151,9 +148,8 @@
         </collision>
     </link>
 
-    <joint name="rotor_3_joint" type="revolute">
+    <joint name="rotor_3_joint" type="continuous">
         <axis xyz="0 0 1"/>
-        <limit lower="-1000000000000" upper="100000000000" effort="10" velocity="30"/>
         <origin xyz="-0.13 -0.22 0.023" rpy="0 0 0" />
         <parent link="base_link"/>
         <child link="rotor_3" />
