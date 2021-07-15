@@ -31,7 +31,7 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="package://uav_inspections_ros2/meshes/iris.stl"/>
+                <box size="0.47 0.47 0.11"/>
             </geometry>
         </collision>
     </link>
@@ -59,7 +59,8 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_ccw.stl"/>
+                <cylinder length="0.005" radius="0.128" /> 
+                <!-- <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_ccw.stl"/> -->
             </geometry>
         </collision>
     </link>
@@ -87,7 +88,8 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_ccw.stl"/>
+                <cylinder length="0.005" radius="0.128" /> 
+                <!-- <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_ccw.stl"/> -->
             </geometry>
         </collision>
     </link>
@@ -115,7 +117,8 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_cw.stl"/>
+                <cylinder length="0.005" radius="0.128" /> 
+                <!-- <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_cw.stl"/> -->
             </geometry>
         </collision>
     </link>
@@ -143,7 +146,8 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_cw.stl"/>
+                <cylinder length="0.005" radius="0.128" /> 
+                <!-- <mesh filename="package://uav_inspections_ros2/meshes/iris_prop_cw.stl"/> -->
             </geometry>
         </collision>
     </link>
@@ -164,20 +168,58 @@
       <child link="camera_link" />
     </joint>
 
-    <link name="imu_link"/>
+    <link name="imu_link">
+        <inertial>
+            <mass value="0.015" />
+            <origin xyz="0 0 0"/>
+            <inertia ixx="1e-05" ixy="0.0" ixz="0.0" iyy="1e-05" iyz="0.0" izz="1e-05" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="0.01" radius="0.002" /> 
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="0.01" radius="0.002" /> 
+            </geometry>
+        </collision>
+    </link>
 
-    <joint name="imu_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="0 0 0" />
+    <joint name="imu_joint" type="revolute">
+      <origin xyz="0.1 0 0" rpy="0 0 0" />
       <parent link="base_link"/>
       <child link="imu_link" />
+      <limit effort="0" velocity="0" lower="0" upper="0" />
     </joint>
 
-    <link name="gps_link"/>
+    <link name="gps_link">
+        <inertial>
+            <mass value="0.015" />
+            <origin xyz="0 0 0"/>
+            <inertia ixx="1e-05" ixy="0.0" ixz="0.0" iyy="1e-05" iyz="0.0" izz="1e-05" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="0.01" radius="0.002" /> 
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="0.01" radius="0.002" /> 
+            </geometry>
+        </collision>
+    </link>
 
-    <joint name="gps_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="0 0 0" />
+    <joint name="gps_joint" type="revolute">
+      <origin xyz="-0.1 0 0" rpy="0 0 0" />
       <parent link="base_link"/>
       <child link="gps_link" />
+      <limit effort="0" velocity="0" lower="0" upper="0" />
     </joint>
     
     <link name="magnetometer_link"/>
@@ -197,7 +239,7 @@
     </joint>
 
 
-    <!-- Gazebo -->
+    <!-- General Gazebo -->
     <gazebo reference="chassis_link">
        <material>Gazebo/Grey</material>
     </gazebo>
@@ -218,13 +260,14 @@
        <material>Gazebo/Yellow</material>
     </gazebo>
 
+    <!-- ROS2 Gazebo -->
     <gazebo>
     <plugin name="ground_truth_odom" filename="libgazebo_ros_p3d.so">
         <ros>
             <argument>odom:=odom/perfect</argument>
         </ros>
         <body_name>base_link</body_name>
-        <frame_name>chassis_link</frame_name>
+        <frame_name>world</frame_name>
         <update_rate>1</update_rate>
         <xyz_offset>0 0 0</xyz_offset>
         <rpy_offset>0 0 0</rpy_offset>
@@ -237,7 +280,7 @@
     <sensor type="depth" name="camera">
         <always_on>true</always_on>
         <update_rate>30</update_rate>
-      <camera name="camera">
+        <camera name="camera">
         <horizontal_fov>1.2</horizontal_fov>
         <image>
           <width>640</width>
@@ -267,20 +310,22 @@
     </sensor>
     </gazebo>
 
-    <gazebo reference="imu_link">
-    <plugin name='rotors_gazebo_imu_plugin' filename='libgazebo_imu_plugin.so'>
-      <robotNamespace/>
-      <linkName>/imu_link</linkName>
-      <imuTopic>/imu</imuTopic>
-      <gyroscopeNoiseDensity>0.00018665</gyroscopeNoiseDensity>
-      <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
-      <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
-      <gyroscopeTurnOnBiasSigma>0.0087</gyroscopeTurnOnBiasSigma>
-      <accelerometerNoiseDensity>0.00186</accelerometerNoiseDensity>
-      <accelerometerRandomWalk>0.006</accelerometerRandomWalk>
-      <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
-      <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
+    <gazebo>
+    <plugin name="gazebo_ros_joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+        <ros>
+          <namespace></namespace>
+        </ros>
+        <update_rate>2</update_rate>
+        <joint_name>rotor_0_joint</joint_name>
+        <joint_name>rotor_1_joint</joint_name>
+        <joint_name>rotor_2_joint</joint_name>
+        <joint_name>rotor_3_joint</joint_name>
+        <joint_name>imu_joint</joint_name>
+        <joint_name>gps_joint</joint_name>
     </plugin>
+    </gazebo>
+
+    <!-- <gazebo reference="imu_link"> -->
     <!-- <sensor name="imu" type="imu"> -->
     <!-- <always_on>true</always_on> -->
     <!-- <update_rate>30</update_rate> -->
@@ -292,68 +337,9 @@
         <!-- <frame_name>imu_link</frame_name> -->
     <!-- </plugin> -->
     <!-- </sensor> -->
-    </gazebo>
+    <!-- </gazebo> -->
 
-    <gazebo reference="gps_link">
-    <sensor name="gps" type="gps">
-        <pose>0 0 0 0 0 0</pose>
-        <update_rate>5.0</update_rate>
-        <always_on>true</always_on>
-        <visualize>false</visualize>
-        <!-- GpsSensor noise currently not used -->
-        <!-- <gps>
-          <position_sensing>
-            <horizontal>
-              <noise type="gaussian_quantized">
-                <mean>0</mean>
-                <stddev>1</stddev>
-                <bias_mean>3</bias_mean>
-                <bias_stddev>1</bias_stddev>
-                <precision>0.5</precision>
-              </noise>
-            </horizontal>
-            <vertical>
-              <noise type="gaussian_quantized">
-                <mean>0</mean>
-                <stddev>1</stddev>
-                <bias_mean>3</bias_mean>
-                <bias_stddev>1</bias_stddev>
-                <precision>1.0</precision>
-              </noise>
-            </vertical>
-          </position_sensing>
-          <velocity_sensing>
-            <horizontal>
-              <noise type="gaussian_quantized">
-                <mean>0</mean>
-                <stddev>0.1</stddev>
-                <bias_mean>0.1</bias_mean>
-                <bias_stddev>0.1</bias_stddev>
-                <precision>0.1</precision>
-              </noise>
-            </horizontal>
-            <vertical>
-              <noise type="gaussian_quantized">
-                <mean>0</mean>
-                <stddev>0.2</stddev>
-                <bias_mean>0.2</bias_mean>
-                <bias_stddev>0.2</bias_stddev>
-                <precision>0.2</precision>
-              </noise>
-            </vertical>
-          </velocity_sensing>
-        </gps> -->
-        <plugin name="gps_plugin" filename="libgazebo_gps_plugin.so">
-          <robotNamespace></robotNamespace>
-          <gpsNoise>true</gpsNoise>
-          <gpsXYRandomWalk>2.0</gpsXYRandomWalk>
-          <gpsZRandomWalk>4.0</gpsZRandomWalk>
-          <gpsXYNoiseDensity>2.0e-4</gpsXYNoiseDensity>
-          <gpsZNoiseDensity>4.0e-4</gpsZNoiseDensity>
-          <gpsVXYNoiseDensity>0.2</gpsVXYNoiseDensity>
-          <gpsVZNoiseDensity>0.4</gpsVZNoiseDensity>
-        </plugin>
-      </sensor>
+    <!-- <gazebo reference="gps_link"> -->
     <!-- <sensor name="gps" type="gps"> -->
           <!-- <always_on>true</always_on> -->
           <!-- <update_rate>30</update_rate> -->
@@ -380,10 +366,91 @@
             <!-- </ros> -->
           <!-- </plugin> -->
         <!-- </sensor> -->
+    <!-- </gazebo> -->
+
+    <!-- PX4 Gazebo -->
+    <gazebo reference="gps_link">
+        <sensor name="gps" type="gps">
+        <update_rate>5</update_rate>
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+        <!-- GpsSensor noise currently not used -->
+        <!-- <gps> -->
+          <!-- <position_sensing> -->
+            <!-- <horizontal> -->
+              <!-- <noise type="gaussian_quantized"> -->
+                <!-- <mean>0</mean> -->
+                <!-- <stddev>1</stddev> -->
+                <!-- <bias_mean>3</bias_mean> -->
+                <!-- <bias_stddev>1</bias_stddev> -->
+                <!-- <precision>0.5</precision> -->
+              <!-- </noise> -->
+            <!-- </horizontal> -->
+            <!-- <vertical> -->
+              <!-- <noise type="gaussian_quantized"> -->
+                <!-- <mean>0</mean> -->
+                <!-- <stddev>1</stddev> -->
+                <!-- <bias_mean>3</bias_mean> -->
+                <!-- <bias_stddev>1</bias_stddev> -->
+                <!-- <precision>1.0</precision> -->
+              <!-- </noise> -->
+            <!-- </vertical> -->
+          <!-- </position_sensing> -->
+          <!-- <velocity_sensing> -->
+            <!-- <horizontal> -->
+              <!-- <noise type="gaussian_quantized"> -->
+                <!-- <mean>0</mean> -->
+                <!-- <stddev>0.1</stddev> -->
+                <!-- <bias_mean>0.1</bias_mean> -->
+                <!-- <bias_stddev>0.1</bias_stddev> -->
+                <!-- <precision>0.1</precision> -->
+              <!-- </noise> -->
+            <!-- </horizontal> -->
+            <!-- <vertical> -->
+              <!-- <noise type="gaussian_quantized"> -->
+                <!-- <mean>0</mean> -->
+                <!-- <stddev>0.2</stddev> -->
+                <!-- <bias_mean>0.2</bias_mean> -->
+                <!-- <bias_stddev>0.2</bias_stddev> -->
+                <!-- <precision>0.2</precision> -->
+              <!-- </noise> -->
+            <!-- </vertical> -->
+          <!-- </velocity_sensing> -->
+        <!-- </gps>  -->
+        <plugin name="gps_plugin" filename="libgazebo_gps_plugin.so">
+          <robotNamespace></robotNamespace>
+          <topic>/gps</topic>
+          <linkName>gps_link</linkName>
+          <update_rate>5</update_rate>
+          <always_on>true</always_on>
+          <gpsNoise>true</gpsNoise>
+          <gpsXYRandomWalk>2.0</gpsXYRandomWalk>
+          <gpsZRandomWalk>4.0</gpsZRandomWalk>
+          <gpsXYNoiseDensity>2.0e-4</gpsXYNoiseDensity>
+          <gpsZNoiseDensity>4.0e-4</gpsZNoiseDensity>
+          <gpsVXYNoiseDensity>0.2</gpsVXYNoiseDensity>
+          <gpsVZNoiseDensity>0.4</gpsVZNoiseDensity>
+        </plugin>
+      </sensor>
     </gazebo>
 
+    <gazebo>
+    <plugin name='rotors_gazebo_imu_plugin' filename='libgazebo_imu_plugin.so'>
+        <robotNamespace></robotNamespace>
+      <linkName>imu_link</linkName>
+      <imuTopic>/imu</imuTopic>
+      <gyroscopeNoiseDensity>0.00018665</gyroscopeNoiseDensity>
+      <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
+      <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+      <gyroscopeTurnOnBiasSigma>0.0087</gyroscopeTurnOnBiasSigma>
+      <accelerometerNoiseDensity>0.00186</accelerometerNoiseDensity>
+      <accelerometerRandomWalk>0.006</accelerometerRandomWalk>
+      <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+      <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
+    </plugin>
+    </gazebo>
 
-    <gazebo reference="rotor_0">
+    <gazebo>
     <plugin name='front_right_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
       <jointName>rotor_0_joint</jointName>
@@ -403,7 +470,7 @@
     </plugin>
     </gazebo>
 
-    <gazebo reference="rotor_1">
+    <gazebo>
     <plugin name='back_left_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
       <jointName>rotor_1_joint</jointName>
@@ -423,7 +490,7 @@
     </plugin>
     </gazebo>
 
-    <gazebo reference="rotor_2">
+    <gazebo>
     <plugin name='front_left_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
       <jointName>rotor_2_joint</jointName>
@@ -443,7 +510,7 @@
     </plugin>
     </gazebo>
 
-    <gazebo reference="rotor_3">
+    <gazebo>
     <plugin name='back_right_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
       <jointName>rotor_3_joint</jointName>
@@ -463,7 +530,7 @@
     </plugin>
     </gazebo>
 
-    <gazebo reference="barometer_link">
+    <gazebo>
     <plugin name='barometer_plugin' filename='libgazebo_barometer_plugin.so'>
       <robotNamespace/>
       <pubRate>50</pubRate>
@@ -472,7 +539,7 @@
     </plugin>
     </gazebo>
 
-    <gazebo reference="magnetometer_link">
+    <gazebo>
     <plugin name='magnetometer_plugin' filename='libgazebo_magnetometer_plugin.so'>
       <robotNamespace/>
       <pubRate>100</pubRate>
@@ -483,49 +550,10 @@
     </plugin>
     </gazebo>
 
-    <!-- Transmissions (not sure if needed yet)-->
-  <!-- <transmission name="rotor_0_trans"> -->
-    <!-- <type>transmission_interface/SimpleTransmission</type> -->
-    <!-- <actuator name="rotor_0"> -->
-      <!-- <mechanicalReduction>1</mechanicalReduction> -->
-    <!-- </actuator> -->
-    <!-- <joint name="rotor_0_joint"> -->
-      <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
-    <!-- </joint> -->
-  <!-- </transmission> -->
-  <!-- <transmission name="rotor_1_trans"> -->
-    <!-- <type>transmission_interface/SimpleTransmission</type> -->
-    <!-- <actuator name="rotor_1"> -->
-      <!-- <mechanicalReduction>1</mechanicalReduction> -->
-    <!-- </actuator> -->
-    <!-- <joint name="rotor_1_joint"> -->
-      <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
-    <!-- </joint> -->
-  <!-- </transmission> -->
-  <!-- <transmission name="rotor_2_trans"> -->
-    <!-- <type>transmission_interface/SimpleTransmission</type> -->
-    <!-- <actuator name="rotor_2"> -->
-      <!-- <mechanicalReduction>1</mechanicalReduction> -->
-    <!-- </actuator> -->
-    <!-- <joint name="rotor_2_joint"> -->
-      <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
-    <!-- </joint> -->
-  <!-- </transmission> -->
-  <!-- <transmission name="rotor_3_trans"> -->
-    <!-- <type>transmission_interface/SimpleTransmission</type> -->
-    <!-- <actuator name="rotor_3"> -->
-      <!-- <mechanicalReduction>1</mechanicalReduction> -->
-    <!-- </actuator> -->
-    <!-- <joint name="rotor_3_joint"> -->
-      <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
-    <!-- </joint> -->
-  <!-- </transmission> -->
-
     <gazebo>
     <plugin name='mavlink_interface' filename='libgazebo_mavlink_interface.so'>
       <robotNamespace/>
       <imuSubTopic>/imu</imuSubTopic>
-      <gpsSubTopic>/gps</gpsSubTopic>
       <magSubTopic>/mag</magSubTopic>
       <baroSubTopic>/baro</baroSubTopic>
       <mavlink_addr>INADDR_ANY</mavlink_addr>
@@ -541,9 +569,9 @@
       <hil_mode>false</hil_mode>
       <hil_state_level>false</hil_state_level>
       <vehicle_is_tailsitter>false</vehicle_is_tailsitter>
-      <send_vision_estimation>true</send_vision_estimation>
-      <send_odometry>false</send_odometry>
-      <enable_lockstep>false</enable_lockstep>
+      <send_vision_estimation>false</send_vision_estimation>
+      <send_odometry>true</send_odometry>
+      <enable_lockstep>true</enable_lockstep>
       <use_tcp>true</use_tcp>
       <motorSpeedCommandPubTopic>/gazebo/command/motor_speed</motorSpeedCommandPubTopic>
       <control_channels>
@@ -581,11 +609,19 @@
         </channel>
       </control_channels>
     </plugin>
-    <!-- <plugin name='rosbag' filename='libgazebo_multirotor_base_plugin.so'> -->
-      <!-- <robotNamespace/> -->
-      <!-- <linkName>base_link</linkName> -->
-      <!-- <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim> -->
-    <!-- </plugin> -->
+    </gazebo>
+    <gazebo>
+    <plugin name='multirotor_base_plugin' filename='libgazebo_multirotor_base_plugin.so'>
+        <robotNamespace></robotNamespace>
+        <linkName>base_link</linkName>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+    </plugin>
+    </gazebo>
+
+    <gazebo>
+    <plugin name='rotors_groundtruth_plugin' filename='libgazebo_groundtruth_plugin.so'>
+      <robotNamespace/>
+    </plugin>
     </gazebo>
 
 </robot>
