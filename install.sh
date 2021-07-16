@@ -20,6 +20,7 @@ mkdir -p ~/ros2_ws/src
 mkdir ~/sources
 cd ~/ros2_ws/src
 sudo rm -rf ~/ros2_ws/src/uav_inspection_ros2
+sudo rm -rf ~/ros2_ws/src/odom_to_tf_ros2
 sudo rm -rf ~/ros2_ws/src/px4_ros_com
 sudo rm -rf ~/ros2_ws/src/px4_msgs
 sudo rm -rf ~/sources/foonathan_memory_vendor
@@ -27,6 +28,7 @@ sudo rm -rf ~/sources/PX4-Autopilot
 sudo rm -rf ~/sources/Fast-RTPS-Gen 
 sudo rm -rf ~/sources/FastDDS-2.0.0 
 git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_inspections_ros2
+git clone https://github.com/gstavrinos/odom_to_tf_ros2 ~/ros2_ws/src/odom_to_tf_ros2
 git clone https://github.com/PX4/px4_ros_com ~/ros2_ws/src/px4_ros_com
 git clone https://github.com/PX4/px4_msgs ~/ros2_ws/src/px4_msgs
 git clone https://github.com/eProsima/foonathan_memory_vendor.git ~/sources/foonathan_memory_vendor
@@ -48,7 +50,9 @@ sudo make install
 cd ~/sources/Fast-RTPS-Gen
 ./gradlew assemble
 sudo ./gradlew install
-cd ~/ros2_ws/src/px4_ros_com/scripts
-sudo bash build_ros2_workspace.bash
+# cd ~/ros2_ws/src/px4_ros_com/scripts
+# sudo bash build_ros2_workspace.bash
+cd ~/ros2_ws
+colcon build
 cd ~/sources/PX4-Autopilot
 DONT_RUN=1 make px4_sitl_rtps gazebo
