@@ -26,6 +26,7 @@ pkill -x gzserver || true
 pkill -x gzclient || true
 pkill -x px4 || true
 pkill -x px4_$model || true
+pkill -x odom_to_tf || true
 
 export PX4_SIM_MODEL=$model
 . ~/.bashrc
@@ -37,6 +38,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/sources/PX4-Autopilot/build/px4_sitl_r
 # echo $GAZEBO_PLUGIN_PATH
 # echo $LD_LIBRARY_PATH
 gzserver --verbose $world &
+
+ros2 run odom_to_tf_ros2 odom_to_tf &
+
+ros2 launch uav_inspections_ros2 description.launch.py simulation:=true &
 
 while gz model --verbose --spawn-file=$urdf --model-name=$model -x 1.01 -y 0.98 -z 0.83 2>&1 | grep -q "An instance of Gazebo is not running."; do
     echo "gzserver not ready yet, trying again!"
@@ -57,4 +62,5 @@ pkill -x gzserver || true
 pkill -x gzclient || true
 pkill -x px4 || true
 pkill -x px4_$model || true
+pkill -x odom_to_tf || true
 cd $starting_dir
