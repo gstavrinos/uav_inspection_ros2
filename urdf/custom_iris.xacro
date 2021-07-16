@@ -267,8 +267,8 @@
             <argument>odom:=odom/perfect</argument>
         </ros>
         <body_name>base_link</body_name>
-        <frame_name>world</frame_name>
-        <update_rate>1</update_rate>
+        <frame_name>odom</frame_name>
+        <update_rate>30</update_rate>
         <xyz_offset>0 0 0</xyz_offset>
         <rpy_offset>0 0 0</rpy_offset>
         <gaussian_noise>0</gaussian_noise>
@@ -315,7 +315,7 @@
         <ros>
           <namespace></namespace>
         </ros>
-        <update_rate>2</update_rate>
+        <update_rate>10</update_rate>
         <joint_name>rotor_0_joint</joint_name>
         <joint_name>rotor_1_joint</joint_name>
         <joint_name>rotor_2_joint</joint_name>
