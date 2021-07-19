@@ -163,9 +163,17 @@
     <link name="camera_link"/>
 
     <joint name="camera_joint" type="fixed">
-      <origin xyz="0.05 0 -0.05" rpy="0 0 0" />
+      <origin xyz="0.15 0 -0.01" rpy="0 0 0" />
       <parent link="base_link"/>
       <child link="camera_link" />
+    </joint>
+
+    <link name="camera_optical_link"/>
+
+    <joint name="camera_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="-1.57079632679 0 -1.57079632679"/>
+      <parent link="camera_link"/>
+      <child link="camera_optical_link" />
     </joint>
 
     <link name="imu_link">
@@ -303,7 +311,7 @@
       </camera>
       <plugin name="simulated_camera" filename="libgazebo_ros_camera.so">
         <camera_name>camera</camera_name>
-        <frame_name>camera_link</frame_name>
+        <frame_name>camera_optical_link</frame_name>
         <hack_baseline>0.07</hack_baseline>
         <min_depth>0.001</min_depth>
       </plugin>
