@@ -27,6 +27,7 @@ pkill -x gzclient || true
 pkill -x px4 || true
 pkill -x px4_$model || true
 pkill -x odom_to_tf || true
+pkill -x robot_state_publisher || true
 
 export PX4_SIM_MODEL=$model
 . ~/.bashrc
@@ -63,4 +64,5 @@ pkill -x gzclient || true
 pkill -x px4 || true
 pkill -x px4_$model || true
 pkill -x odom_to_tf || true
+pkill -x robot_state_publisher || true
 cd $starting_dir
