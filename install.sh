@@ -50,9 +50,9 @@ sudo make install
 cd ~/sources/Fast-RTPS-Gen
 ./gradlew assemble
 sudo ./gradlew install
-# cd ~/ros2_ws/src/px4_ros_com/scripts
-# sudo bash build_ros2_workspace.bash
-cd ~/ros2_ws
-colcon build
+cd ~/ros2_ws/src/px4_ros_com/scripts
+sudo bash build_ros2_workspace.bash
+# cd ~/ros2_ws
+# colcon build
 cd ~/sources/PX4-Autopilot
 DONT_RUN=1 make px4_sitl_rtps gazebo
