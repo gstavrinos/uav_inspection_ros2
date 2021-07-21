@@ -21,6 +21,7 @@ for file in "$@"; do
     cp "$file" $rootfs/
 done
 
+pkill -x micrortps_agent || true
 pkill -x gazebo || true
 pkill -x gzserver || true
 pkill -x gzclient || true
@@ -52,12 +53,15 @@ done
 sleep 5
 nice -n 20 gzclient --verbose &
 
+micrortps_agent -t UDP &
+
 pushd $rootfs >/dev/null
 
 ~/sources/PX4-Autopilot/build/px4_sitl_rtps/bin/px4 ~/sources/PX4-Autopilot/build/px4_sitl_rtps/etc -s etc/init.d-posix/rcS -t ~/sources/PX4-Autopilot/test_data
 
 popd >/dev/null
 
+pkill -x micrortps_agent || true
 pkill -x gazebo || true
 pkill -x gzserver || true
 pkill -x gzclient || true
