@@ -7,9 +7,10 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+
+find_package(rclcpp REQUIRED)
+find_package(px4_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -23,6 +24,15 @@ if(BUILD_TESTING)
 endif()
 
 ament_package()
+
+add_executable(simple_goal_publisher src/simple_goal_publisher.cpp)
+ament_target_dependencies(simple_goal_publisher
+    rclcpp
+    px4_msgs
+    geometry_msgs
+)
+install(TARGETS simple_goal_publisher
+  DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
