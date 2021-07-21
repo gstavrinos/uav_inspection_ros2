@@ -12,25 +12,27 @@ sudo rosdep init
 rosdep update
 echo "alias rosdep_install='rosdep install -i --from-path src --rosdistro galactic -y'" >> ~/.bashrc
 echo "source /opt/ros/galactic/setup.bash" >> ~/.bashrc
+echo "source ~/px4_ros2_ws/install/local_setup.bash" >> ~/.bashrc
 echo "source ~/ros2_ws/install/local_setup.bash" >> ~/.bashrc
 echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ~/.bashrc
 echo "export _colcon_cd_root=~/ros2_ws" >> ~/.bashrc
 . /opt/ros/galactic/setup.bash
 mkdir -p ~/ros2_ws/src
+mkdir -p ~/px4_ros2_ws/src
 mkdir ~/sources
 cd ~/ros2_ws/src
 sudo rm -rf ~/ros2_ws/src/uav_inspection_ros2
 sudo rm -rf ~/ros2_ws/src/odom_to_tf_ros2
-sudo rm -rf ~/ros2_ws/src/px4_ros_com
-sudo rm -rf ~/ros2_ws/src/px4_msgs
+sudo rm -rf ~/px4_ros2_ws/src/px4_ros_com
+sudo rm -rf ~/px4_ros2_ws/src/px4_msgs
 sudo rm -rf ~/sources/foonathan_memory_vendor
 sudo rm -rf ~/sources/PX4-Autopilot
 sudo rm -rf ~/sources/Fast-RTPS-Gen 
 sudo rm -rf ~/sources/FastDDS-2.0.0 
 git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_inspections_ros2
 git clone https://github.com/gstavrinos/odom_to_tf_ros2 ~/ros2_ws/src/odom_to_tf_ros2
-git clone https://github.com/PX4/px4_ros_com ~/ros2_ws/src/px4_ros_com
-git clone https://github.com/PX4/px4_msgs ~/ros2_ws/src/px4_msgs
+git clone https://github.com/PX4/px4_ros_com ~/px4_ros2_ws/src/px4_ros_com
+git clone https://github.com/PX4/px4_msgs ~/px4_ros2_ws/src/px4_msgs
 git clone https://github.com/eProsima/foonathan_memory_vendor.git ~/sources/foonathan_memory_vendor
 git clone --recursive https://github.com/PX4/PX4-Autopilot.git -b release/1.12 ~/sources/PX4-Autopilot
 git clone --recursive https://github.com/eProsima/Fast-DDS.git -b v2.0.0 ~/sources/FastDDS-2.0.0
@@ -50,9 +52,11 @@ sudo make install
 cd ~/sources/Fast-RTPS-Gen
 ./gradlew assemble
 sudo ./gradlew install
-cd ~/ros2_ws/src/px4_ros_com/scripts
+cd ~/px4_ros2_ws/src/px4_ros_com/scripts
 sudo bash build_ros2_workspace.bash
-# cd ~/ros2_ws
-# colcon build
+. ~/px4_ros2_ws/install/local_setup.sh
+cd ~/ros2_ws
+colcon build --symlink-install
+. ~/.bashrc
 cd ~/sources/PX4-Autopilot
 DONT_RUN=1 make px4_sitl_rtps gazebo
