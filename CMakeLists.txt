@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 
 find_package(rclcpp REQUIRED)
 find_package(px4_msgs REQUIRED)
+find_package(moveit_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 if(BUILD_TESTING)
@@ -29,6 +30,7 @@ add_executable(simple_goal_publisher src/simple_goal_publisher.cpp)
 ament_target_dependencies(simple_goal_publisher
     rclcpp
     px4_msgs
+    moveit_msgs
     geometry_msgs
 )
 install(TARGETS simple_goal_publisher

@@ -8,6 +8,7 @@
 #include <px4_msgs/msg/vehicle_command.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <px4_msgs/msg/trajectory_setpoint.hpp>
+#include <moveit_msgs/msg/robot_trajectory.hpp>
 #include <px4_msgs/msg/vehicle_control_mode.hpp>
 #include <px4_msgs/msg/offboard_control_mode.hpp>
 
@@ -24,11 +25,13 @@ class SimpleGoalPublisher: public rclcpp::Node {
                             [this](const px4_msgs::msg::Timesync::UniquePtr msg) {
                                 timestamp_.store(msg->timestamp);
                             });
-            
-           posestamped_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("simple_goal_publisher/goal", 10, std::bind(&SimpleGoalPublisher::poseStampedCallback, this, _1));
 
-           // Start hovering at 1 meter
-           goal.z = -1.0;
+            posestamped_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("simple_goal_publisher/goal", 10, std::bind(&SimpleGoalPublisher::poseStampedCallback, this, _1));
+
+            robot_trajectory_sub_ = this->create_subscription<moveit_msgs::msg::RobotTrajectory>("move_group/plan", 10, std::bind(&SimpleGoalPublisher::robotTrajectoryCallback, this, _1));
+
+            // Start hovering at 1 meter
+            goal.z = -1.0;
 
             offboard_setpoint_counter_ = 0;
 
@@ -64,6 +67,7 @@ class SimpleGoalPublisher: public rclcpp::Node {
         rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_publisher_;
         rclcpp::Subscription<px4_msgs::msg::Timesync>::SharedPtr timesync_sub_;
         rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr posestamped_sub_;
+        rclcpp::Subscription<moveit_msgs::msg::RobotTrajectory>::SharedPtr robot_trajectory_sub_;
 
         std::atomic<uint64_t> timestamp_;
 
@@ -74,6 +78,7 @@ class SimpleGoalPublisher: public rclcpp::Node {
         void publishTrajectorySetpoint() const;
         void publishVehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0) const;
         void poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr);
+        void robotTrajectoryCallback(const moveit_msgs::msg::RobotTrajectory::SharedPtr);
 };
 
 void SimpleGoalPublisher::poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
@@ -84,6 +89,11 @@ void SimpleGoalPublisher::poseStampedCallback(const geometry_msgs::msg::PoseStam
     goal.z = -msg->pose.position.z;
     // TODO quat to euler
     // goal.yaw = -3.14; // [-PI:PI]
+}
+
+void SimpleGoalPublisher::robotTrajectoryCallback(const moveit_msgs::msg::RobotTrajectory::SharedPtr msg) {
+    RCLCPP_INFO(this->get_logger(), "Got a new plan!");
+    // TODO
 }
 
 void SimpleGoalPublisher::arm() const {
