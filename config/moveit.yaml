@@ -1,0 +1,19 @@
+uav_moveit:
+  ros__parameters:
+    planning_scene_monitor_options:
+      name: "planning_scene_monitor"
+      robot_description: "robot_description"
+      joint_state_topic: "/joint_states"
+      attached_collision_object_topic: "/uav_moveit/planning_scene_monitor"
+      publish_planning_scene_topic: "/uav_moveit/publish_planning_scene"
+      monitored_planning_scene_topic: "/uav_moveit/monitored_planning_scene"
+      wait_for_initial_state_timeout: 10.0
+
+    planning_pipelines:
+      pipeline_names: ["ompl"]
+
+    plan_request_params:
+      planning_attempts: 10
+      planning_pipeline: ompl
+      max_velocity_scaling_factor: 1.0
+      max_acceleration_scaling_factor: 1.0
