@@ -1,0 +1,9 @@
+controller_names:
+  - uav_controller
+
+uav_controller:
+  action_ns: follow_joint_trajectory
+  type: FollowJointTrajectory
+  default: true
+  joints:
+    - virtual_joint

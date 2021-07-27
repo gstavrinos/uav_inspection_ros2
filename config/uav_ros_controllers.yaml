@@ -1,0 +1,20 @@
+controller_manager:
+    ros__parameters:
+        update_rate: 100  # Hz
+
+        uav_controller:
+            type: joint_trajectory_controller/JointTrajectoryController
+
+        joint_state_controller:
+            type: joint_state_controller/JointStateController
+
+
+uav_controller:
+    ros__parameters:
+        command_interfaces:
+            - position
+        state_interfaces:
+            - position
+            - velocity
+        joints:
+            - virtual_joint
