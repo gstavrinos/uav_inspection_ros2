@@ -11,7 +11,10 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(px4_msgs REQUIRED)
 find_package(moveit_msgs REQUIRED)
+find_package(moveit_common REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -36,9 +39,23 @@ ament_target_dependencies(simple_goal_publisher
 install(TARGETS simple_goal_publisher
   DESTINATION lib/${PROJECT_NAME})
 
+add_executable(uav_moveit src/moveit_planning.cpp)
+ament_target_dependencies(uav_moveit
+    rclcpp
+    moveit_msgs
+    moveit_common
+    geometry_msgs
+    trajectory_msgs
+    moveit_ros_planning_interface
+)
+install(TARGETS uav_moveit
+  DESTINATION lib/${PROJECT_NAME})
+
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY urdf
   DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY meshes 
+  DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME})
