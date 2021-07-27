@@ -25,6 +25,7 @@ mkdir ~/sources
 cd ~/ros2_ws/src
 sudo rm -rf ~/ros2_ws/src/uav_inspection_ros2
 sudo rm -rf ~/ros2_ws/src/odom_to_tf_ros2
+sudo rm -rf ~/ros2_ws/src/gazebo_ros2_control
 sudo rm -rf ~/px4_ros2_ws/src/px4_ros_com
 sudo rm -rf ~/px4_ros2_ws/src/px4_msgs
 sudo rm -rf ~/moveit2_ros2_ws/src/moveit2
@@ -34,6 +35,7 @@ sudo rm -rf ~/sources/Fast-RTPS-Gen
 sudo rm -rf ~/sources/FastDDS-2.0.0
 git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_inspections_ros2
 git clone https://github.com/gstavrinos/odom_to_tf_ros2 ~/ros2_ws/src/odom_to_tf_ros2
+git clone https://github.com/ros-simulation/gazebo_ros2_control ~/ros2_ws/src/gazebo_ros2_control
 git clone https://github.com/PX4/px4_ros_com ~/px4_ros2_ws/src/px4_ros_com
 git clone https://github.com/ros-planning/moveit2 ~/moveit2_ros2_ws/src/moveit2
 git clone https://github.com/PX4/px4_msgs ~/px4_ros2_ws/src/px4_msgs
