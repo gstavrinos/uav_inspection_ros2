@@ -40,7 +40,7 @@ git clone https://github.com/PX4/px4_ros_com ~/px4_ros2_ws/src/px4_ros_com
 git clone https://github.com/ros-planning/moveit2 ~/moveit2_ros2_ws/src/moveit2
 git clone https://github.com/PX4/px4_msgs ~/px4_ros2_ws/src/px4_msgs
 git clone https://github.com/eProsima/foonathan_memory_vendor.git ~/sources/foonathan_memory_vendor
-git clone --recursive https://github.com/PX4/PX4-Autopilot.git -b release/1.12 ~/sources/PX4-Autopilot
+git clone --recursive https://github.com/PX4/PX4-Autopilot.git -b v1.12.0 ~/sources/PX4-Autopilot
 git clone --recursive https://github.com/eProsima/Fast-DDS.git -b v2.0.0 ~/sources/FastDDS-2.0.0
 git clone --recursive https://github.com/eProsima/Fast-DDS-Gen.git -b v1.0.4 ~/sources/Fast-RTPS-Gen
 . ~/.bashrc
