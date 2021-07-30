@@ -30,7 +30,7 @@ def load_yaml(package_name, file_path):
 
 
 def generate_launch_description():
-    # moveit_cpp.yaml is passed by filename for now since it's node specific
+    # moveit.yaml is passed by filename for now since it's node specific
     moveit_yaml_file_name = (
         get_package_share_directory("uav_inspections_ros2") + "/config/moveit.yaml"
     )
@@ -78,42 +78,80 @@ def generate_launch_description():
     )
     ompl_planning_pipeline_config["ompl"].update(ompl_planning_yaml)
 
-    uav_moveit = Node(
-        name="uav_moveit",
-        package="uav_inspections_ros2",
-        executable="uav_moveit",
+    # Trajectory Execution Functionality
+    moveit_simple_controllers_yaml = load_yaml(
+        "uav_inspections_ros2", "config/uav_controllers.yaml"
+    )
+    moveit_controllers = {
+        "moveit_simple_controller_manager": moveit_simple_controllers_yaml,
+        "moveit_controller_manager": "moveit_simple_controller_manager/MoveItSimpleControllerManager",
+    }
+
+    trajectory_execution = {
+        "moveit_manage_controllers": True,
+        "trajectory_execution.allowed_execution_duration_scaling": 1.2,
+        "trajectory_execution.allowed_goal_duration_margin": 0.5,
+        "trajectory_execution.allowed_start_tolerance": 0.01,
+    }
+
+    planning_scene_monitor_parameters = {
+        "publish_planning_scene": True,
+        "publish_geometry_updates": True,
+        "publish_state_updates": True,
+        "publish_transforms_updates": True,
+    }
+
+    move_group_node = Node(
+        package="moveit_ros_move_group",
+        executable="move_group",
         output="screen",
         parameters=[
-            moveit_yaml_file_name,
             robot_description,
             robot_description_semantic,
             kinematics_yaml,
             ompl_planning_pipeline_config,
+            trajectory_execution,
             moveit_controllers,
+            planning_scene_monitor_parameters,
         ],
     )
 
-    # RViz
-    #  rviz_config_file = (
-        #  get_package_share_directory("run_moveit_cpp") + "/launch/run_moveit_cpp.rviz"
-    #  )
-    #  rviz_node = Node(
-        #  package="rviz2",
-        #  executable="rviz2",
-        #  name="rviz2",
-        #  output="log",
-        #  arguments=["-d", rviz_config_file],
-        #  parameters=[robot_description, robot_description_semantic],
+    #  uav_moveit = Node(
+        #  name="uav_moveit",
+        #  package="uav_inspections_ros2",
+        #  executable="uav_moveit",
+        #  output="screen",
+        #  parameters=[
+            #  moveit_yaml_file_name,
+            #  robot_description,
+            #  robot_description_semantic,
+            #  kinematics_yaml,
+            #  ompl_planning_pipeline_config,
+            #  moveit_controllers,
+        #  ],
     #  )
 
+    # RViz
+    rviz_config_file = (
+        get_package_share_directory("uav_inspections_ros2") + "/config/moveit.rviz"
+    )
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file],
+        parameters=[robot_description, robot_description_semantic],
+    )
+
     # Static TF
-    #  static_tf = Node(
-        #  package="tf2_ros",
-        #  executable="static_transform_publisher",
-        #  name="static_transform_publisher",
-        #  output="log",
-        #  arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "world", "odom"],
-    #  )
+    static_tf = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_transform_publisher",
+        output="log",
+        arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "world", "base_link"],
+    )
 
     # Publish TF
     #  robot_state_publisher = Node(
@@ -130,6 +168,7 @@ def generate_launch_description():
         "config",
         "uav_ros_controllers.yaml",
     )
+
     ros2_control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -157,11 +196,12 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            #  static_tf,
+            static_tf,
             #  robot_state_publisher,
-            uav_moveit,
+            #  uav_moveit,
+            move_group_node,
             ros2_control_node,
-            #  rviz_node,
+            rviz_node,
         ]
         + load_controllers
     )
