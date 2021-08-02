@@ -45,7 +45,8 @@ ros2 run odom_to_tf_ros2 odom_to_tf &
 
 ros2 launch uav_inspections_ros2 description.launch.py simulation:=true &
 
-while gz model --verbose --spawn-file=$urdf --model-name=$model -x 1.01 -y 0.98 -z 0.83 2>&1 | grep -q "An instance of Gazebo is not running."; do
+# while gz model --verbose --spawn-file=$urdf --model-name=$model -x 1.01 -y 0.98 -z 0.83 2>&1 | grep -q "An instance of Gazebo is not running."; do
+while gz model --verbose --spawn-file=$urdf --model-name=$model -x 0 -y 0 -z 0.83 2>&1 | grep -q "An instance of Gazebo is not running."; do
     echo "gzserver not ready yet, trying again!"
     sleep 1
 done
