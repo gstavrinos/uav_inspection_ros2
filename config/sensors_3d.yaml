@@ -1,9 +1,12 @@
 sensors:
-  - filtered_cloud_topic: filtered_cloud
-    max_range: 10.0
+  - front_cam
+front_cam:
+    filtered_cloud_topic: /camera/filtered_points
+    max_range: 5.0
     max_update_rate: 1.0
     padding_offset: 0.1
     padding_scale: 1.0
-    point_cloud_topic: /camera/depth/points
+    point_cloud_topic: /camera/points
     point_subsample: 1
     sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
+octomap_resolution: 0.1
