@@ -71,6 +71,7 @@ def generate_launch_description():
             "planning_plugin": "ompl_interface/OMPLPlanner",
             "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
             "start_state_max_bounds_error": 0.1,
+            "default_workspace_bounds": 100.0
         },
     }
     ompl_planning_yaml = load_yaml(
@@ -100,6 +101,10 @@ def generate_launch_description():
         "publish_state_updates": True,
         "publish_transforms_updates": True,
     }
+    
+    sensors_3d_yaml = load_yaml(
+        "uav_inspections_ros2", "config/sensors_3d.yaml"
+    )
 
     move_group_node = Node(
         package="moveit_ros_move_group",
@@ -113,6 +118,7 @@ def generate_launch_description():
             trajectory_execution,
             moveit_controllers,
             planning_scene_monitor_parameters,
+            sensors_3d_yaml,
         ],
     )
 
@@ -150,7 +156,7 @@ def generate_launch_description():
         executable="static_transform_publisher",
         name="static_transform_publisher",
         output="log",
-        arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "world", "base_link"],
+        arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "world", "odom"],
     )
 
     # Publish TF
