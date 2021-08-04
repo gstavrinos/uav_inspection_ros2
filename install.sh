@@ -5,7 +5,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 sudo sh -c 'echo "deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list'
 curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 sudo apt-get update
-sudo apt-get install ros-galactic-desktop ros-galactic-rqt* ros-galactic-eigen3-cmake-module ros-galactic-joint-state-publisher clang-format-10 python3-setuptools python3-vcstool python3-colcon-common-extensions python3-flake8 python3-pytest-cov python3-rosdep python3-empy python-numpy dmidecode gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-libav libeigen3-dev libgazebo11-dev libgstreamer-plugins-base1.0-dev libimage-exiftool-perl libopencv-dev libxml2-utils pkg-config protobuf-compiler gradle ros-galactic-gazebo-ros-pkgs ros-galactic-moveit-core ros-galactic-moveit-common ros-galactic-moveit-plugins -y
+sudo apt-get install ros-galactic-desktop ros-galactic-rqt* ros-galactic-eigen3-cmake-module ros-galactic-joint-state-publisher clang-format-10 python3-setuptools python3-vcstool python3-colcon-common-extensions python3-flake8 python3-pytest-cov python3-rosdep python3-empy python-numpy dmidecode libgstreamer1.0-0 libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-libav libeigen3-dev libgazebo11-dev libgstreamer-plugins-base1.0-dev libimage-exiftool-perl libopencv-dev libxml2-utils pkg-config protobuf-compiler gradle ros-galactic-gazebo-ros-pkgs ros-galactic-moveit-core ros-galactic-moveit-common ros-galactic-moveit-plugins -y
 sudo pip3 install -U pyros-genmsg setuptools jinja2 argcomplete argparse cerberus coverage matplotlib numpy nunavut packaging pandas pkgconfig pygments wheel pymavlink pyserial pyulog requests six toml flake8-blind-except flake8-builtins flake8-class-newline flake8-comprehensions flake8-deprecated flake8-docstrings flake8-import-order flake8-quotes pytest-repeat pytest-rerunfailures pytest
 . /opt/ros/galactic/setup.bash
 sudo rosdep init
@@ -28,7 +28,7 @@ sudo rm -rf ~/ros2_ws/src/odom_to_tf_ros2
 sudo rm -rf ~/ros2_ws/src/gazebo_ros2_control
 sudo rm -rf ~/px4_ros2_ws/src/px4_ros_com
 sudo rm -rf ~/px4_ros2_ws/src/px4_msgs
-sudo rm -rf ~/moveit2_ros2_ws/src/moveit2
+sudo rm -rf ~/moveit2_ros2_ws/src/*
 sudo rm -rf ~/sources/foonathan_memory_vendor
 sudo rm -rf ~/sources/PX4-Autopilot
 sudo rm -rf ~/sources/Fast-RTPS-Gen
@@ -37,7 +37,7 @@ git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_in
 git clone https://github.com/gstavrinos/odom_to_tf_ros2 ~/ros2_ws/src/odom_to_tf_ros2
 git clone https://github.com/ros-simulation/gazebo_ros2_control ~/ros2_ws/src/gazebo_ros2_control
 git clone https://github.com/PX4/px4_ros_com ~/px4_ros2_ws/src/px4_ros_com
-git clone https://github.com/ros-planning/moveit2 ~/moveit2_ros2_ws/src/moveit2
+git clone https://github.com/ros-planning/moveit2 -b 2.2.1 ~/moveit2_ros2_ws/src/moveit2
 git clone https://github.com/PX4/px4_msgs ~/px4_ros2_ws/src/px4_msgs
 git clone https://github.com/eProsima/foonathan_memory_vendor.git ~/sources/foonathan_memory_vendor
 git clone --recursive https://github.com/PX4/PX4-Autopilot.git -b v1.12.0 ~/sources/PX4-Autopilot
