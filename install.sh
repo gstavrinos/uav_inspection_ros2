@@ -23,12 +23,18 @@ mkdir -p ~/px4_ros2_ws/src
 mkdir -p ~/moveit2_ros2_ws/src
 mkdir ~/sources
 cd ~/ros2_ws/src
-sudo rm -rf ~/ros2_ws/src/uav_inspection_ros2
+sudo rm -rf ~/ros2_ws/src/uav_inspections_ros2
 sudo rm -rf ~/ros2_ws/src/odom_to_tf_ros2
 sudo rm -rf ~/ros2_ws/src/gazebo_ros2_control
+sudo rm -rf ~/ros2_ws/build
+sudo rm -rf ~/ros2_ws/install
 sudo rm -rf ~/px4_ros2_ws/src/px4_ros_com
 sudo rm -rf ~/px4_ros2_ws/src/px4_msgs
+sudo rm -rf ~/px4_ros2_ws/build
+sudo rm -rf ~/px4_ros2_ws/install
 sudo rm -rf ~/moveit2_ros2_ws/src/*
+sudo rm -rf ~/moveit2_ros2_ws/build
+sudo rm -rf ~/moveit2_ros2_ws/install
 sudo rm -rf ~/sources/foonathan_memory_vendor
 sudo rm -rf ~/sources/PX4-Autopilot
 sudo rm -rf ~/sources/Fast-RTPS-Gen
