@@ -41,7 +41,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/sources/PX4-Autopilot/build/px4_sitl_r
 # echo $LD_LIBRARY_PATH
 gzserver --verbose $world &
 
-ros2 run odom_to_tf_ros2 odom_to_tf &
+ros2 run odom_to_tf_ros2 odom_to_tf --ros-args --params-file ~/ros2_ws/src/odom_to_tf_ros2/config/odom_to_tf.yaml -- &
 
 ros2 launch uav_inspections_ros2 description.launch.py simulation:=true &
 
