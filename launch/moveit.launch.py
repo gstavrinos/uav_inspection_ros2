@@ -71,7 +71,7 @@ def generate_launch_description():
             "planning_plugin": "ompl_interface/OMPLPlanner",
             "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
             "start_state_max_bounds_error": 0.1,
-            "default_workspace_bounds": 100.0
+            "default_workspace_bounds": 9999.0
         },
     }
     ompl_planning_yaml = load_yaml(
