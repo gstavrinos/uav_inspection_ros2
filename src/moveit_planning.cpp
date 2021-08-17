@@ -20,19 +20,29 @@ void run() {
     move_group_->clearPathConstraints();
     move_group_->setStartStateToCurrentState();
 
-    geometry_msgs::msg::PoseStamped goal_pose;
-    goal_pose.header.stamp = node_->now();
-    goal_pose.header.frame_id = ref_link_;
-    goal_pose.pose.position.x = 0.5;
-    goal_pose.pose.position.y = -0.25;
-    goal_pose.pose.position.z = 1.0;
-    goal_pose.pose.orientation.x = 0.707;
-    goal_pose.pose.orientation.w = 0.707;
+    const moveit::core::JointModelGroup* joint_model_group = move_group_->getRobotModel()->getJointModelGroup(PLANNING_GROUP);
 
-    move_group_->setPoseTarget(goal_pose);
+    moveit::core::RobotStatePtr goal_state = move_group_->getCurrentState(10);
+    std::vector<double> joint_group_positions;
+    goal_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
+    joint_group_positions[0] = 1.0;
+    move_group_->setJointValueTarget(joint_group_positions);
+
+    // geometry_msgs::msg::PoseStamped goal_pose = move_group_->getCurrentPose();
+    // goal_pose.header.stamp = node_->now();
+    // goal_pose.header.frame_id = ref_link_;
+    // // goal_pose.pose.position.x = 0.5;
+    // // goal_pose.pose.position.y = -0.25;
+    // goal_pose.pose.position.z = 0.1;
+    // // goal_pose.pose.orientation.x = 0.707;
+    // goal_pose.pose.orientation.w = 1.0; //0.707;
+
+    // move_group_->setPoseTarget(goal_pose);
 
     moveit::planning_interface::MoveGroupInterface::Plan plan;
     const bool plan_success = (move_group_->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    RCLCPP_ERROR(LOGGER, "=================================================================");
+    RCLCPP_WARN(LOGGER, ref_link_.c_str());
     RCLCPP_INFO(LOGGER, "Plan %s", plan_success ? "SUCCEEDED" : "FAILED");
 }
 
@@ -43,7 +53,7 @@ private:
     const std::string PLANNING_GROUP = "uav";
     rclcpp::Node::SharedPtr node_;
     moveit::planning_interface::MoveGroupInterfacePtr move_group_;
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
+    // moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 };
 
 int main(int argc, char** argv) {
