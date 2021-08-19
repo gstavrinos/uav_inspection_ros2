@@ -11,13 +11,14 @@ static const rclcpp::Logger LOGGER = rclcpp::get_logger("uav_moveit");
 
 class MoveItPlanning : public rclcpp::Node {
 public:
-    MoveItPlanning(rclcpp::NodeOptions node_options) : Node("moveit_planning", "", node_options) {
+    MoveItPlanning(std::string name, rclcpp::NodeOptions node_options, rclcpp::Node::SharedPtr move_group_node) : Node(name, node_options) {
+        node_ = move_group_node;
         move_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(node_, PLANNING_GROUP);
         move_group_->setPlanningTime(PLANNING_TIME_S);
         move_group_->setNumPlanningAttempts(PLANNING_ATTEMPTS);
         ref_link_ = move_group_->getPoseReferenceFrame();
         goal_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("simple_goal_publisher/goal", 10);
-        odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>("odom/perfect", 10, std::bind(&MoveItPlanning::odomCallback, this, _1));
+        odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>("odom/perfect", rclcpp::SensorDataQoS(), std::bind(&MoveItPlanning::odomCallback, this, _1));
         posestamped_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("moveit_planning/goal", 10, std::bind(&MoveItPlanning::poseStampedCallback, this, _1));
     }
 
@@ -39,11 +40,10 @@ private:
 
     void odomCallback(const nav_msgs::msg::Odometry::SharedPtr);
     void poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr);
-    // moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 };
     
 // TODO instead of odom I should use a state monitor
-void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
+void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr) {
     if (goal.header.frame_id != "") {
         move_group_->clearPoseTargets();
         move_group_->clearPathConstraints();
@@ -81,7 +81,6 @@ void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
 }
 
 void MoveItPlanning::poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
-
     goal.header.frame_id = msg->header.frame_id;
     goal.pose.position.x= msg->pose.position.x;
     goal.pose.position.y= msg->pose.position.y;
@@ -99,11 +98,13 @@ int main(int argc, char** argv) {
     // best practice would be to declare parameters in the corresponding classes
     // and provide descriptions about expected use
     node_options.automatically_declare_parameters_from_overrides(true);
-    // rclcpp::Node::SharedPtr node = rclcpp::Node::make_shared("uav_moveit", "", node_options);
-    rclcpp::spin(std::make_shared<MoveItPlanning>(node_options));
+    rclcpp::Node::SharedPtr move_group_node = rclcpp::Node::make_shared("moveit_planning_move_group_helper_node", node_options);
+    rclcpp::executors::SingleThreadedExecutor executor;
+    executor.add_node(move_group_node);
+    std::thread([&executor]() { executor.spin(); }).detach();
 
-    // MoveItPlanning uav_moveit(node);
-    // rclcpp::spin(node);
+    rclcpp::spin(std::make_shared<MoveItPlanning>("moveit_planning", node_options, move_group_node));
+
     rclcpp::shutdown();
     return 0;
 }

@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 
 find_package(rclcpp REQUIRED)
 find_package(px4_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_common REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -42,6 +43,7 @@ install(TARGETS simple_goal_publisher
 add_executable(uav_moveit src/moveit_planning.cpp)
 ament_target_dependencies(uav_moveit
     rclcpp
+    nav_msgs
     moveit_msgs
     moveit_common
     geometry_msgs
