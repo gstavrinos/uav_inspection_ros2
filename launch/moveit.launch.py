@@ -71,7 +71,8 @@ def generate_launch_description():
             "planning_plugin": "ompl_interface/OMPLPlanner",
             "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
             "start_state_max_bounds_error": 0.1,
-            "default_workspace_bounds": 9999.0
+            "default_workspace_bounds": 9999.0,
+            "longest_valid_segment_fraction": 0.01
         },
     }
     ompl_planning_yaml = load_yaml(
@@ -122,20 +123,20 @@ def generate_launch_description():
         ],
     )
 
-    #  uav_moveit = Node(
-        #  name="uav_moveit",
-        #  package="uav_inspections_ros2",
-        #  executable="uav_moveit",
-        #  output="screen",
-        #  parameters=[
-            #  moveit_yaml_file_name,
-            #  robot_description,
-            #  robot_description_semantic,
-            #  kinematics_yaml,
-            #  ompl_planning_pipeline_config,
-            #  moveit_controllers,
-        #  ],
-    #  )
+    uav_moveit = Node(
+        name="uav_moveit",
+        package="uav_inspections_ros2",
+        executable="uav_moveit",
+        output="screen",
+        parameters=[
+            moveit_yaml_file_name,
+            robot_description,
+            robot_description_semantic,
+            kinematics_yaml,
+            ompl_planning_pipeline_config,
+            moveit_controllers,
+        ],
+    )
 
     # RViz
     rviz_config_file = (
@@ -145,7 +146,7 @@ def generate_launch_description():
         package="rviz2",
         executable="rviz2",
         name="rviz2",
-        output="log",
+        output={"both": "log"},
         arguments=["-d", rviz_config_file],
         parameters=[robot_description, robot_description_semantic],
     )
@@ -159,14 +160,13 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "odom", "base_link"],
     )
 
-    # Publish TF
-    #  robot_state_publisher = Node(
-        #  package="robot_state_publisher",
-        #  executable="robot_state_publisher",
-        #  name="robot_state_publisher",
-        #  output="both",
-        #  parameters=[robot_description],
-    #  )
+    simple_goal_publisher = Node(
+        package="uav_inspections_ros2",
+        executable="simple_goal_publisher",
+        name="simple_goal_publisher",
+        output="both",
+        parameters=[],
+    )
 
     # ros2_control using FakeSystem as hardware
     ros2_controllers_path = os.path.join(
@@ -203,8 +203,8 @@ def generate_launch_description():
     return LaunchDescription(
         [
             static_tf,
-            #  robot_state_publisher,
-            #  uav_moveit,
+            simple_goal_publisher,
+            uav_moveit,
             move_group_node,
             ros2_control_node,
             rviz_node,
