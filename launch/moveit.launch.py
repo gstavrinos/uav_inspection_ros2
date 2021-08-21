@@ -110,7 +110,7 @@ def generate_launch_description():
     move_group_node = Node(
         package="moveit_ros_move_group",
         executable="move_group",
-        output="screen",
+        output={"stdout": "log"},
         parameters=[
             robot_description,
             robot_description_semantic,
@@ -146,7 +146,7 @@ def generate_launch_description():
         package="rviz2",
         executable="rviz2",
         name="rviz2",
-        output={"both": "log"},
+        output={"stdout": "log"},
         arguments=["-d", rviz_config_file],
         parameters=[robot_description, robot_description_semantic],
     )
