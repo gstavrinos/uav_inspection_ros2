@@ -2,6 +2,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
@@ -35,60 +37,80 @@ private:
     moveit::planning_interface::MoveGroupInterface::Plan plan;
     moveit::planning_interface::MoveGroupInterfacePtr move_group_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
-    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr posestamped_sub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pub_;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr posestamped_sub_;
 
     void odomCallback(const nav_msgs::msg::Odometry::SharedPtr);
     void poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr);
 };
-    
-// TODO instead of odom I should use a state monitor
-void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr) {
+
+// NOTE The odom message provides the required tf info but, still, it is not the
+// most desirable way to have a callback for the goal position
+void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom) {
     if (goal.header.frame_id != "") {
         move_group_->clearPoseTargets();
         move_group_->clearPathConstraints();
         move_group_->setStartStateToCurrentState();
-        moveit::core::RobotStatePtr goal_state = move_group_->getCurrentState(10);
+        // moveit::core::RobotStatePtr goal_state = move_group_->getCurrentState(10);
         std::vector<double> joint_group_positions;
-        const moveit::core::JointModelGroup *joint_model_group_ = move_group_->getRobotModel()->getJointModelGroup(PLANNING_GROUP);
-        goal_state->copyJointGroupPositions(joint_model_group_, joint_group_positions);
-        joint_group_positions[0] = goal.pose.position.x;
-        joint_group_positions[1] = goal.pose.position.y;
-        joint_group_positions[2] = goal.pose.position.z;
-        joint_group_positions[3] = goal.pose.orientation.x;
-        joint_group_positions[4] = goal.pose.orientation.y;
-        joint_group_positions[5] = goal.pose.orientation.z;
-        joint_group_positions[6] = goal.pose.orientation.w;
+        // const moveit::core::JointModelGroup *joint_model_group_ = move_group_->getRobotModel()->getJointModelGroup(PLANNING_GROUP);
+        // goal_state->copyJointGroupPositions(joint_model_group_, joint_group_positions);
+        joint_group_positions.push_back(goal.pose.position.x);
+        joint_group_positions.push_back(goal.pose.position.y);
+        joint_group_positions.push_back(goal.pose.position.z);
+        joint_group_positions.push_back(goal.pose.orientation.x);
+        joint_group_positions.push_back(goal.pose.orientation.y);
+        joint_group_positions.push_back(goal.pose.orientation.z);
+        joint_group_positions.push_back(goal.pose.orientation.w);
+
         move_group_->setJointValueTarget(joint_group_positions);
         const bool plan_success = (move_group_->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         RCLCPP_INFO(LOGGER, "=================================================================");
         RCLCPP_INFO(LOGGER, "Plan %s", plan_success ? "SUCCEEDED" : "FAILED");
         RCLCPP_INFO(LOGGER, "=================================================================");
         if (plan_success) {
+            geometry_msgs::msg::TransformStamped tfs;
+            tfs.header.stamp = this->now();
+            tfs.header.frame_id = "world";
+            tfs.child_frame_id = ref_link_;
+            tfs.transform.translation.x = odom->pose.pose.position.x;
+            tfs.transform.translation.y = odom->pose.pose.position.y;
+            tfs.transform.translation.z = odom->pose.pose.position.z;
+            tfs.transform.rotation.x = odom->pose.pose.orientation.x;
+            tfs.transform.rotation.y = odom->pose.pose.orientation.y;
+            tfs.transform.rotation.z = odom->pose.pose.orientation.z;
+            tfs.transform.rotation.w = odom->pose.pose.orientation.w;
+
             geometry_msgs::msg::PoseStamped g;
-            g.header.frame_id = goal.header.frame_id;
+            // g.header.frame_id = ref_link_;
             g.header.stamp  = this->now();
-            g.pose.position.x = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].translation.x;
-            g.pose.position.y = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].translation.y;
-            g.pose.position.z = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].translation.z;
-            g.pose.orientation.x = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].rotation.x;
-            g.pose.orientation.y = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].rotation.y;
-            g.pose.orientation.z = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].rotation.z;
-            g.pose.orientation.w = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].rotation.w;
+            g.header.frame_id = plan.trajectory_.multi_dof_joint_trajectory.header.frame_id;
+            g.pose.position.x = plan.trajectory_.multi_dof_joint_trajectory.points[1].transforms[0].translation.x;
+            g.pose.position.y = plan.trajectory_.multi_dof_joint_trajectory.points[1].transforms[0].translation.y;
+            g.pose.position.z = plan.trajectory_.multi_dof_joint_trajectory.points[1].transforms[0].translation.z;
+            g.pose.orientation.x = plan.trajectory_.multi_dof_joint_trajectory.points[1].transforms[0].rotation.x;
+            g.pose.orientation.y = plan.trajectory_.multi_dof_joint_trajectory.points[1].transforms[0].rotation.y;
+            g.pose.orientation.z = plan.trajectory_.multi_dof_joint_trajectory.points[1].transforms[0].rotation.z;
+            g.pose.orientation.w = plan.trajectory_.multi_dof_joint_trajectory.points[1].transforms[0].rotation.w;
+
+            tf2::doTransform(g, g, tfs);
+
             goal_pub_->publish(g);
         }
     }
 }
 
 void MoveItPlanning::poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+    // TODO the goal needs to be transformed to the world frame.
+    // For now, I will just assume it's received in the world frame.
     goal.header.frame_id = msg->header.frame_id;
-    goal.pose.position.x= msg->pose.position.x;
-    goal.pose.position.y= msg->pose.position.y;
-    goal.pose.position.z= msg->pose.position.z;
-    goal.pose.orientation.x= msg->pose.orientation.x;
-    goal.pose.orientation.y= msg->pose.orientation.y;
-    goal.pose.orientation.z= msg->pose.orientation.z;
-    goal.pose.orientation.w= msg->pose.orientation.w;
+    goal.pose.position.x = msg->pose.position.x;
+    goal.pose.position.y = msg->pose.position.y;
+    goal.pose.position.z = msg->pose.position.z;
+    goal.pose.orientation.x = msg->pose.orientation.x;
+    goal.pose.orientation.y = msg->pose.orientation.y;
+    goal.pose.orientation.z = msg->pose.orientation.z;
+    goal.pose.orientation.w = msg->pose.orientation.w;
 }
 
 int main(int argc, char** argv) {
