@@ -48,20 +48,37 @@ private:
 // most desirable way to have a callback for the goal position
 void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom) {
     if (goal.header.frame_id != "") {
+        // TODO for now, instead of transforming, I am warning the user (and myself)
+        if (goal.header.frame_id != "world") {
+            RCLCPP_WARN(LOGGER, "Goal does not have a \"world\" frame_id. Unspecified behaviour expected.");
+        }
         move_group_->clearPoseTargets();
         move_group_->clearPathConstraints();
-        move_group_->setStartStateToCurrentState();
-        // moveit::core::RobotStatePtr goal_state = move_group_->getCurrentState(10);
+        // TODO fix rotation problems (misalignment between px4 and moveit)
+        // TODO correctly transform for any frame
         std::vector<double> joint_group_positions;
-        // const moveit::core::JointModelGroup *joint_model_group_ = move_group_->getRobotModel()->getJointModelGroup(PLANNING_GROUP);
-        // goal_state->copyJointGroupPositions(joint_model_group_, joint_group_positions);
-        joint_group_positions.push_back(goal.pose.position.x);
-        joint_group_positions.push_back(goal.pose.position.y);
-        joint_group_positions.push_back(goal.pose.position.z);
-        joint_group_positions.push_back(goal.pose.orientation.x);
-        joint_group_positions.push_back(goal.pose.orientation.y);
-        joint_group_positions.push_back(goal.pose.orientation.z);
-        joint_group_positions.push_back(goal.pose.orientation.w);
+        const moveit::core::JointModelGroup *joint_model_group_ = move_group_->getRobotModel()->getJointModelGroup(PLANNING_GROUP);
+        joint_group_positions.push_back(odom->pose.pose.position.x);
+        joint_group_positions.push_back(odom->pose.pose.position.y);
+        joint_group_positions.push_back(odom->pose.pose.position.z);
+        joint_group_positions.push_back(odom->pose.pose.orientation.x);
+        joint_group_positions.push_back(odom->pose.pose.orientation.y);
+        joint_group_positions.push_back(odom->pose.pose.orientation.z);
+        joint_group_positions.push_back(odom->pose.pose.orientation.w);
+        moveit::core::RobotStatePtr curr_state = move_group_->getCurrentState(1);
+        curr_state->setJointGroupPositions(joint_model_group_, joint_group_positions);
+        move_group_->setStartState(*curr_state);
+        for (auto i : joint_group_positions) {
+            std::cout << i << ",";
+        }
+        std::cout << std::endl;
+        joint_group_positions[0] = goal.pose.position.x;
+        joint_group_positions[1] = goal.pose.position.y;
+        joint_group_positions[2] = goal.pose.position.z;
+        joint_group_positions[3] = goal.pose.orientation.x;
+        joint_group_positions[4] = goal.pose.orientation.y;
+        joint_group_positions[5] = goal.pose.orientation.z;
+        joint_group_positions[6] = goal.pose.orientation.w;
 
         move_group_->setJointValueTarget(joint_group_positions);
         const bool plan_success = (move_group_->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
