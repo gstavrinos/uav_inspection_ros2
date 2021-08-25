@@ -90,7 +90,7 @@ void SimpleGoalPublisher::poseStampedCallback(const geometry_msgs::msg::PoseStam
     // goal.yaw = -3.14; // [-PI:PI]
     double siny_cosp = 2 * (msg->pose.orientation.w * msg->pose.orientation.z + msg->pose.orientation.x * msg->pose.orientation.y);
     double cosy_cosp = 1 - 2 * (msg->pose.orientation.y * msg->pose.orientation.y + msg->pose.orientation.z * msg->pose.orientation.z);
-    goal.yaw = -std::atan2(siny_cosp, cosy_cosp);
+    goal.yaw = std::atan2(siny_cosp, cosy_cosp);
 }
 
 void SimpleGoalPublisher::robotTrajectoryCallback(const moveit_msgs::msg::RobotTrajectory::SharedPtr msg) {
