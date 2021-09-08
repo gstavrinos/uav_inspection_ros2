@@ -8,6 +8,7 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 using std::placeholders::_1;
+using namespace std::chrono_literals;
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("uav_moveit");
 
@@ -22,17 +23,23 @@ public:
         goal_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("simple_goal_publisher/goal", 10);
         odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>("odom/perfect", rclcpp::SensorDataQoS(), std::bind(&MoveItPlanning::odomCallback, this, _1));
         posestamped_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("moveit_planning/goal", 10, std::bind(&MoveItPlanning::poseStampedCallback, this, _1));
+        timer_ = this->create_wall_timer(0.2s, [this]() {
+                planning();
+            });
     }
 
     ~MoveItPlanning() {}
 
 private:
     std::string ref_link_;
+    bool currently_planning;
     rclcpp::Node::SharedPtr node_;
     double min_dist_threshold = 0.01;
-    const double PLANNING_TIME_S = 30.0;
-    const double PLANNING_ATTEMPTS = 5.0;
+    rclcpp::TimerBase::SharedPtr timer_;
+    const double PLANNING_TIME_S = 5.0;
+    const double PLANNING_ATTEMPTS = 1.0;
     geometry_msgs::msg::PoseStamped goal;
+    nav_msgs::msg::Odometry::SharedPtr odom;
     const std::string PLANNING_GROUP = "uav";
     moveit::planning_interface::MoveGroupInterface::Plan plan;
     moveit::planning_interface::MoveGroupInterfacePtr move_group_;
@@ -40,14 +47,14 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr posestamped_sub_;
 
+    void planning();
     void odomCallback(const nav_msgs::msg::Odometry::SharedPtr);
     void poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr);
 };
 
-// NOTE The odom message provides the required tf info but, still, it is not the
-// most desirable way to have a callback for the goal position
-void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom) {
-    if (goal.header.frame_id != "") {
+void MoveItPlanning::planning() {
+    if (goal.header.frame_id != "" and !currently_planning) {
+        currently_planning = true;
         // TODO for now, instead of transforming, I am warning the user (and myself)
         if (goal.header.frame_id != "world") {
             RCLCPP_WARN(LOGGER, "Goal does not have a \"world\" frame_id. Unspecified behaviour expected.");
@@ -66,12 +73,9 @@ void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom)
         joint_group_positions.push_back(odom->pose.pose.orientation.z);
         joint_group_positions.push_back(odom->pose.pose.orientation.w);
         moveit::core::RobotStatePtr curr_state = move_group_->getCurrentState(1);
-        curr_state->setJointGroupPositions(joint_model_group_, joint_group_positions);
-        move_group_->setStartState(*curr_state);
-        for (auto i : joint_group_positions) {
-            std::cout << i << ",";
-        }
-        std::cout << std::endl;
+        move_group_->setStartStateToCurrentState();
+        // curr_state->setJointGroupPositions(joint_model_group_, joint_group_positions);
+        // move_group_->setStartState(*curr_state);
         joint_group_positions[0] = goal.pose.position.x;
         joint_group_positions[1] = goal.pose.position.y;
         joint_group_positions[2] = goal.pose.position.z;
@@ -79,9 +83,10 @@ void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom)
         joint_group_positions[4] = goal.pose.orientation.y;
         joint_group_positions[5] = goal.pose.orientation.z;
         joint_group_positions[6] = goal.pose.orientation.w;
-
         move_group_->setJointValueTarget(joint_group_positions);
+        RCLCPP_INFO(LOGGER, "Planning....");
         const bool plan_success = (move_group_->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        currently_planning = false;
         RCLCPP_INFO(LOGGER, "=================================================================");
         RCLCPP_INFO(LOGGER, "Plan %s", plan_success ? "SUCCEEDED" : "FAILED");
         RCLCPP_INFO(LOGGER, "=================================================================");
@@ -110,11 +115,17 @@ void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom)
             g.pose.orientation.z = plan.trajectory_.multi_dof_joint_trajectory.points[1].transforms[0].rotation.z;
             g.pose.orientation.w = plan.trajectory_.multi_dof_joint_trajectory.points[1].transforms[0].rotation.w;
 
-            tf2::doTransform(g, g, tfs);
+            // tf2::doTransform(g, g, tfs);
 
             goal_pub_->publish(g);
         }
     }
+}
+
+void MoveItPlanning::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom) {
+    this->odom = odom;
+    // TODO check current goal progress
+    // and maybe alter the goal based on odometry
 }
 
 void MoveItPlanning::poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
