@@ -35,9 +35,11 @@ ament_package()
 add_executable(simple_goal_publisher src/simple_goal_publisher.cpp)
 ament_target_dependencies(simple_goal_publisher
     rclcpp
+    tf2_ros
     px4_msgs
     moveit_msgs
     geometry_msgs
+    tf2_geometry_msgs
 )
 install(TARGETS simple_goal_publisher
   DESTINATION lib/${PROJECT_NAME})
