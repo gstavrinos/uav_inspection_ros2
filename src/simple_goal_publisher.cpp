@@ -2,15 +2,18 @@
 #include <iostream>
 #include <stdint.h>
 
+#include <tf2_ros/buffer.h>
 #include <rclcpp/rclcpp.hpp>
 
 #include <px4_msgs/msg/timesync.hpp>
+#include <tf2_ros/transform_listener.h>
 #include <px4_msgs/msg/vehicle_command.hpp>
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <px4_msgs/msg/trajectory_setpoint.hpp>
 #include <moveit_msgs/msg/robot_trajectory.hpp>
 #include <px4_msgs/msg/vehicle_control_mode.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <px4_msgs/msg/offboard_control_mode.hpp>
 
 using namespace std::chrono_literals;
@@ -19,6 +22,8 @@ using std::placeholders::_1;
 class SimpleGoalPublisher: public rclcpp::Node {
     public:
         SimpleGoalPublisher() : Node("simple_goal_publisher") {
+            tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+            transform_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
             offboard_control_mode_publisher_ = this->create_publisher<px4_msgs::msg::OffboardControlMode>("OffboardControlMode_PubSubTopic", 10);
             trajectory_setpoint_publisher_ = this->create_publisher<px4_msgs::msg::TrajectorySetpoint>("TrajectorySetpoint_PubSubTopic", 10);
             vehicle_command_publisher_ = this->create_publisher<px4_msgs::msg::VehicleCommand>("VehicleCommand_PubSubTopic", 10);
@@ -30,7 +35,6 @@ class SimpleGoalPublisher: public rclcpp::Node {
             posestamped_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("simple_goal_publisher/goal", 10, std::bind(&SimpleGoalPublisher::poseStampedCallback, this, _1));
 
             robot_trajectory_sub_ = this->create_subscription<moveit_msgs::msg::RobotTrajectory>("move_group/plan", 10, std::bind(&SimpleGoalPublisher::robotTrajectoryCallback, this, _1));
-            px4_odom_sub_ = this->create_subscription<px4_msgs::msg::VehicleOdometry>("/VehicleOdometry_PubSubTopic", 10, std::bind(&SimpleGoalPublisher::px4OdomCallback, this, _1));
 
             // Start hovering at 1 meter
             goal.z = -1.0;
@@ -63,68 +67,50 @@ class SimpleGoalPublisher: public rclcpp::Node {
 
     private:
         rclcpp::TimerBase::SharedPtr timer_;
+    std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
         rclcpp::Publisher<px4_msgs::msg::OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
         rclcpp::Publisher<px4_msgs::msg::TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
         rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_publisher_;
+    std::shared_ptr<tf2_ros::TransformListener> transform_listener_;
         rclcpp::Subscription<px4_msgs::msg::Timesync>::SharedPtr timesync_sub_;
         rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr posestamped_sub_;
         rclcpp::Subscription<moveit_msgs::msg::RobotTrajectory>::SharedPtr robot_trajectory_sub_;
-        rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr px4_odom_sub_;
 
         std::atomic<uint64_t> timestamp_;
 
         uint64_t offboard_setpoint_counter_;
         px4_msgs::msg::TrajectorySetpoint goal;
-        px4_msgs::msg::VehicleOdometry px4_odom;
 
         void publishOffboardControlMode() const;
         void publishTrajectorySetpoint() const;
         void publishVehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0) const;
-        void px4OdomCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr);
         void poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr);
         void robotTrajectoryCallback(const moveit_msgs::msg::RobotTrajectory::SharedPtr);
 };
 
 void SimpleGoalPublisher::poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
     RCLCPP_INFO(this->get_logger(), "Got a new goal position!");
-    goal.timestamp = timestamp_.load();
-    goal.x = msg->pose.position.x;
-    goal.y = msg->pose.position.y;
-    goal.z = -msg->pose.position.z;
-    // goal.yaw = -3.14; // [-PI:PI]
-    double siny_cosp = 2 * (msg->pose.orientation.w * msg->pose.orientation.z + msg->pose.orientation.x * msg->pose.orientation.y);
-    double cosy_cosp = 1 - 2 * (msg->pose.orientation.y * msg->pose.orientation.y + msg->pose.orientation.z * msg->pose.orientation.z);
-    goal.yaw = std::atan2(siny_cosp, cosy_cosp);
-    // Message coming from moveit
-    if (msg->header.frame_id == "odom") {
-        goal.x += px4_odom.x;
-        goal.y += px4_odom.y;
-        goal.z += px4_odom.z;
-        // TODO orientation
+    if (msg->header.frame_id == "") {
+        RCLCPP_WARN(this->get_logger(), "Goal has no frame_id. Dismissing...");
+        return;
     }
-    std::cout << "GOAL:[" << goal.x << "," << goal.y << "," << goal.z << "]" << std::endl;
+    geometry_msgs::msg::PoseStamped g;
+    geometry_msgs::msg::TransformStamped tfs = tf_buffer_->lookupTransform("world_ned", msg->header.frame_id, tf2::TimePointZero);
+
+    tf2::doTransform(*msg, g, tfs);
+    goal.timestamp = timestamp_.load();
+    goal.x = g.pose.position.x;
+    goal.y = g.pose.position.y;
+    goal.z = g.pose.position.z;
+    double siny_cosp = 2 * (g.pose.orientation.w * g.pose.orientation.z + g.pose.orientation.x * g.pose.orientation.y);
+    double cosy_cosp = 1 - 2 * (g.pose.orientation.y * g.pose.orientation.y + g.pose.orientation.z * g.pose.orientation.z);
+    goal.yaw = std::atan2(siny_cosp, cosy_cosp);
 }
 
 void SimpleGoalPublisher::robotTrajectoryCallback(const moveit_msgs::msg::RobotTrajectory::SharedPtr msg) {
     RCLCPP_INFO(this->get_logger(), "Got a new plan!");
-    // TODO
-}
-
-void SimpleGoalPublisher::px4OdomCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr px4o) {
-    // TODO not copying the rest of the values of the VehicleOdometry object
-    px4_odom.timestamp = px4o->timestamp;
-    px4_odom.x = px4o->x;
-    px4_odom.y = px4o->y;
-    px4_odom.z = px4o->z;
-    px4_odom.q[0] = px4o->q[0];
-    px4_odom.q[1] = px4o->q[1];
-    px4_odom.q[2] = px4o->q[2];
-    px4_odom.q[3] = px4o->q[3];
-    px4_odom.q_offset[0] = px4o->q_offset[0];
-    px4_odom.q_offset[1] = px4o->q_offset[1];
-    px4_odom.q_offset[2] = px4o->q_offset[2];
-    px4_odom.q_offset[3] = px4o->q_offset[3];
+    // TODO delete this callback
 }
 
 void SimpleGoalPublisher::arm() const {
@@ -140,7 +126,7 @@ void SimpleGoalPublisher::disarm() const {
 }
 
 void SimpleGoalPublisher::publishOffboardControlMode() const {
-    px4_msgs::msg::OffboardControlMode msg{};
+    px4_msgs::msg::OffboardControlMode msg;
     msg.timestamp = timestamp_.load();
     msg.position = true;
     msg.velocity = false;
@@ -153,12 +139,8 @@ void SimpleGoalPublisher::publishOffboardControlMode() const {
 
 
 void SimpleGoalPublisher::publishTrajectorySetpoint() const {
-    px4_msgs::msg::TrajectorySetpoint g;
-    g.x = px4_odom.x + (goal.x - px4_odom.x);
-    g.y = px4_odom.y + (goal.y - px4_odom.y);
-    g.z = px4_odom.z + (goal.z - px4_odom.z);
-    // g.yaw = -3.14; // [-PI:PI]
-    trajectory_setpoint_publisher_->publish(g);
+    // std::cout << "GOAL:[" << goal.x << "," << goal.y << "," << goal.z << "]" << std::endl;
+    trajectory_setpoint_publisher_->publish(goal);
 }
 
 void SimpleGoalPublisher::publishVehicleCommand(uint16_t command, float param1, float param2) const {
@@ -175,7 +157,6 @@ void SimpleGoalPublisher::publishVehicleCommand(uint16_t command, float param1, 
 
     vehicle_command_publisher_->publish(msg);
 }
-
 
 int main(int argc, char* argv[]) {
     rclcpp::init(argc, argv);
