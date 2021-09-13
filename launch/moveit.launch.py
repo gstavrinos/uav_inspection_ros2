@@ -160,6 +160,15 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "odom", "base_link"],
     )
 
+    # NED Static TF
+    ned_static_tf = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_transform_publisher",
+        output="log",
+        arguments=["0.0", "0.0", "0.0", "1.57079632679", "0.0", "3.14159265359", "world", "world_ned"],
+    )
+
     simple_goal_publisher = Node(
         package="uav_inspections_ros2",
         executable="simple_goal_publisher",
@@ -202,11 +211,12 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            static_tf,
             simple_goal_publisher,
-            uav_moveit,
-            move_group_node,
             ros2_control_node,
+            move_group_node,
+            ned_static_tf,
+            uav_moveit,
+            static_tf,
             rviz_node,
         ]
         + load_controllers
