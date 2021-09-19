@@ -43,7 +43,8 @@ git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_in
 git clone https://github.com/gstavrinos/odom_to_tf_ros2 ~/ros2_ws/src/odom_to_tf_ros2
 git clone https://github.com/ros-simulation/gazebo_ros2_control ~/ros2_ws/src/gazebo_ros2_control
 git clone https://github.com/PX4/px4_ros_com ~/px4_ros2_ws/src/px4_ros_com
-git clone https://github.com/ros-planning/moveit2 -b 2.2.1 ~/moveit2_ros2_ws/src/moveit2
+# git clone https://github.com/ros-planning/moveit2 -b 2.2.1 ~/moveit2_ros2_ws/src/moveit2
+git clone https://github.com/ros-planning/moveit2 ~/moveit2_ros2_ws/src/moveit2
 git clone https://github.com/PX4/px4_msgs ~/px4_ros2_ws/src/px4_msgs
 git clone https://github.com/eProsima/foonathan_memory_vendor.git ~/sources/foonathan_memory_vendor
 git clone --recursive https://github.com/PX4/PX4-Autopilot.git -b v1.12.0 ~/sources/PX4-Autopilot
@@ -72,8 +73,11 @@ colcon build --symlink-install
 . ~/.bashrc
 cd ~/sources/PX4-Autopilot
 DONT_RUN=1 make px4_sitl_rtps gazebo
+cd ~/moveit2_ros2_ws/src/moveit2
+git checkout 5ff36ac4855411a8eb8eac636d00ef3838d9611e
 cd ~/moveit2_ros2_ws/src
 vcs import < moveit2/moveit2.repos
+vcs import < moveit2/moveit2_galactic.repos
 rosdep install -r --from-paths . --ignore-src --rosdistro $ROS_DISTRO -y
 cd ~/moveit2_ros2_ws
 colcon build --event-handlers desktop_notification- status- --cmake-args -DCMAKE_BUILD_TYPE=Release
