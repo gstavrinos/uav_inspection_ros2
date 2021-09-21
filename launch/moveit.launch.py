@@ -70,10 +70,13 @@ def generate_launch_description():
         "ompl": {
             "planning_plugin": "ompl_interface/OMPLPlanner",
             "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
-            "start_state_max_bounds_error": 999.0,
-            "default_workspace_bounds": 9999.0,
-            "longest_valid_segment_fraction": 0.001
+            "start_state_max_bounds_error": 99.0,
+            "default_workspace_bounds": 99.0,
         },
+        #  "maximum_waypoint_distance": 0.001,
+        #  "minimum_waypoint_count": 10,
+        #  "longest_valid_segment_fraction": 0.001,
+        #  "simplify_solutions": False,
     }
     ompl_planning_yaml = load_yaml(
         "uav_inspections_ros2", "config/ompl_planning.yaml"
