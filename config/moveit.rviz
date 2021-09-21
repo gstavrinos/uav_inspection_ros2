@@ -62,9 +62,9 @@ Visualization Manager:
           Y: 0
           Z: 0
         Size:
-          X: 999
-          Y: 999
-          Z: 999
+          X: 99
+          Y: 99
+          Z: 99
       Name: MotionPlanning
       Planned Path:
         Color Enabled: false
