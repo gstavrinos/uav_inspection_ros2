@@ -67,12 +67,12 @@ class SimpleGoalPublisher: public rclcpp::Node {
 
     private:
         rclcpp::TimerBase::SharedPtr timer_;
-    std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+        std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
         rclcpp::Publisher<px4_msgs::msg::OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
         rclcpp::Publisher<px4_msgs::msg::TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
         rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_publisher_;
-    std::shared_ptr<tf2_ros::TransformListener> transform_listener_;
+        std::shared_ptr<tf2_ros::TransformListener> transform_listener_;
         rclcpp::Subscription<px4_msgs::msg::Timesync>::SharedPtr timesync_sub_;
         rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr posestamped_sub_;
         rclcpp::Subscription<moveit_msgs::msg::RobotTrajectory>::SharedPtr robot_trajectory_sub_;
