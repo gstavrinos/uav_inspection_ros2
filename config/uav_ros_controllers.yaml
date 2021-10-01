@@ -3,10 +3,10 @@ controller_manager:
         update_rate: 100  # Hz
 
         uav_controller:
-            type: joint_trajectory_controller/JointTrajectoryController
+            type: ros2_px4_controller/PX4_Controller
 
-        joint_state_controller:
-            type: joint_state_controller/JointStateController
+        # joint_state_controller:
+            # type: joint_state_controller/JointStateController
 
 
 uav_controller:
