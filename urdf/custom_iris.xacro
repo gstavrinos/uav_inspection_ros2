@@ -276,7 +276,7 @@
         </ros>
         <body_name>base_link</body_name>
         <frame_name>odom</frame_name>
-        <update_rate>30</update_rate>
+        <update_rate>10</update_rate>
         <xyz_offset>0 0 0</xyz_offset>
         <rpy_offset>0 0 0</rpy_offset>
         <gaussian_noise>0</gaussian_noise>
@@ -287,7 +287,7 @@
     <gazebo reference="camera_link">
     <sensor type="depth" name="camera">
         <always_on>true</always_on>
-        <update_rate>15</update_rate>
+        <update_rate>10</update_rate>
         <camera name="camera">
         <horizontal_fov>1.2</horizontal_fov>
         <image>
@@ -338,12 +338,12 @@
             <!-- <plugin>gazebo_ros2_control/GazeboSystem</plugin> -->
             <plugin>fake_components/GenericSystem</plugin>
         </hardware>
-        <joint name="virtual_joint">
-            <command_interface name="position"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-            <state_interface name="effort"/>
-        </joint>
+        <!-- <joint name="virtual_joint"> -->
+            <!-- <command_interface name="position"/> -->
+            <!-- <state_interface name="position"/> -->
+            <!-- <state_interface name="velocity"/> -->
+            <!-- <state_interface name="effort"/> -->
+        <!-- </joint> -->
     </ros2_control>
 
     <!-- <gazebo> -->
@@ -400,7 +400,7 @@
     <!-- PX4 Gazebo -->
     <gazebo reference="gps_link">
         <sensor name="gps" type="gps">
-        <update_rate>5</update_rate>
+        <update_rate>10</update_rate>
         <always_on>true</always_on>
         <visualize>false</visualize>
         <!-- GpsSensor noise currently not used -->
@@ -450,7 +450,7 @@
           <robotNamespace></robotNamespace>
           <topic>/gps</topic>
           <linkName>gps_link</linkName>
-          <update_rate>5</update_rate>
+          <update_rate>10</update_rate>
           <always_on>true</always_on>
           <gpsNoise>true</gpsNoise>
           <gpsXYRandomWalk>2.0</gpsXYRandomWalk>
