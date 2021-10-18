@@ -17,6 +17,7 @@ find_package(moveit_common REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(moveit_visual_tools REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 
 if(BUILD_TESTING)
@@ -54,6 +55,7 @@ ament_target_dependencies(uav_moveit
     geometry_msgs
     trajectory_msgs
     tf2_geometry_msgs
+    moveit_visual_tools
     moveit_ros_planning_interface
 )
 install(TARGETS uav_moveit
