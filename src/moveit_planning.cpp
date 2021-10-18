@@ -7,6 +7,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include "moveit_visual_tools/moveit_visual_tools.h"
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
@@ -27,11 +28,9 @@ public:
         move_group_->setNumPlanningAttempts(PLANNING_ATTEMPTS);
 
         ref_link_ = move_group_->getPoseReferenceFrame();
-        goal_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("simple_goal_publisher/goal", 10);
+        visual_tools_ = std::make_shared<moveit_visual_tools::MoveItVisualTools>(node_, "world", "uav_moveit_vis", move_group_->getRobotModel());
+        // visual_tools_->deleteAllMarkers();
         posestamped_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("uav_moveit/goal", 10, std::bind(&MoveItPlanning::poseStampedCallback, this, std::placeholders::_1));
-        timer_ = this->create_wall_timer(0.1s, [this]() {
-                planning();
-            });
     }
 
     ~MoveItPlanning() {}
@@ -50,10 +49,10 @@ private:
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
     geometry_msgs::msg::TransformStamped goal_tfs;
     geometry_msgs::msg::PoseStamped goal, moveit_goal;
+    moveit_visual_tools::MoveItVisualToolsPtr visual_tools_;
     moveit::planning_interface::MoveGroupInterface::Plan plan;
     moveit::planning_interface::MoveGroupInterfacePtr move_group_;
     std::shared_ptr<tf2_ros::TransformListener> transform_listener_;
-    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr posestamped_sub_;
 
     void planning();
@@ -62,6 +61,7 @@ private:
 
 void MoveItPlanning::planning() {
     if (goal.header.frame_id != "" and !currently_planning) {
+        const moveit::core::JointModelGroup* joint_model_group = move_group_->getCurrentState()->getJointModelGroup(PLANNING_GROUP);
         currently_planning = true;
         geometry_msgs::msg::TransformStamped tfs = tf_buffer_->lookupTransform(ref_link_, goal.header.frame_id, tf2::TimePointZero);
 
@@ -83,30 +83,16 @@ void MoveItPlanning::planning() {
         RCLCPP_INFO(LOGGER, "=================================================================");
         RCLCPP_INFO(LOGGER, "Plan %s", plan_success ? "SUCCEEDED" : "FAILED");
         RCLCPP_INFO(LOGGER, "=================================================================");
+            
+        visual_tools_->publishTrajectoryLine(plan.trajectory_, joint_model_group);//, rviz_visual_tools::GREEN);
         if (plan_success) {
-
-            geometry_msgs::msg::PoseStamped g;
-            g.header.stamp  = plan.trajectory_.multi_dof_joint_trajectory.header.stamp;
-            g.header.frame_id = plan.trajectory_.multi_dof_joint_trajectory.header.frame_id;
-            g.pose.position.x = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].translation.x;
-            g.pose.position.y = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].translation.y;
-            g.pose.position.z = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].translation.z;
-            g.pose.orientation.x = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].rotation.x;
-            g.pose.orientation.y = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].rotation.y;
-            g.pose.orientation.z = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].rotation.z;
-            g.pose.orientation.w = plan.trajectory_.multi_dof_joint_trajectory.points[0].transforms[0].rotation.w;
-
-            tf2::doTransform(g, g, goal_tfs);
-
-            goal_pub_->publish(g);
+            // visual_tools_->deleteAllMarkers();
+            visual_tools_->trigger();
+            std::cout << plan.trajectory_.points.size() << std::endl;
+            // TODO check execution status
+            move_group_->execute(plan);
         }
     }
-    // TODO handle goal reached with something like this
-    // if (sqrt(pow(moveit_goal.pose.position.x,2) + pow(moveit_goal.pose.position.y,2) + pow(moveit_goal.pose.position.z,2)) <= min_dist_threshold) {
-        // // Disable the goal
-        // goal.header.frame_id = "";
-        // moveit_goal.header.frame_id = "";
-    // }
 }
 
 void MoveItPlanning::poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
@@ -128,7 +114,7 @@ void MoveItPlanning::poseStampedCallback(const geometry_msgs::msg::PoseStamped::
     goal_tfs.transform.rotation.y = goal.pose.orientation.y;
     goal_tfs.transform.rotation.z = goal.pose.orientation.z;
     goal_tfs.transform.rotation.w = goal.pose.orientation.w;
-
+    planning();
 }
 
 int main(int argc, char** argv) {
