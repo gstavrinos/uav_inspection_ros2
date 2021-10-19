@@ -20,6 +20,7 @@ class MoveItPlanning : public rclcpp::Node {
 public:
     MoveItPlanning(std::string name, rclcpp::NodeOptions node_options, std::shared_ptr<rclcpp::Node> move_group_node) : Node(name, node_options) {
         node_ = move_group_node;
+        currently_planning = false;
         tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
         transform_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
         move_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(node_, PLANNING_GROUP);
@@ -29,7 +30,7 @@ public:
 
         ref_link_ = move_group_->getPoseReferenceFrame();
         visual_tools_ = std::make_shared<moveit_visual_tools::MoveItVisualTools>(node_, "world", "uav_moveit_vis", move_group_->getRobotModel());
-        // visual_tools_->deleteAllMarkers();
+        visual_tools_->deleteAllMarkers();
         posestamped_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("uav_moveit/goal", 10, std::bind(&MoveItPlanning::poseStampedCallback, this, std::placeholders::_1));
     }
 
@@ -84,11 +85,10 @@ void MoveItPlanning::planning() {
         RCLCPP_INFO(LOGGER, "Plan %s", plan_success ? "SUCCEEDED" : "FAILED");
         RCLCPP_INFO(LOGGER, "=================================================================");
             
-        visual_tools_->publishTrajectoryLine(plan.trajectory_, joint_model_group);//, rviz_visual_tools::GREEN);
         if (plan_success) {
-            // visual_tools_->deleteAllMarkers();
+            visual_tools_->deleteAllMarkers();
+            visual_tools_->publishTrajectoryLine(plan.trajectory_, joint_model_group->getLinkModel("base_link"), joint_model_group, rviz_visual_tools::GREEN);
             visual_tools_->trigger();
-            std::cout << plan.trajectory_.points.size() << std::endl;
             // TODO check execution status
             move_group_->execute(plan);
         }
@@ -96,25 +96,31 @@ void MoveItPlanning::planning() {
 }
 
 void MoveItPlanning::poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
-    goal.header.frame_id = msg->header.frame_id;
-    goal.pose.position.x = msg->pose.position.x;
-    goal.pose.position.y = msg->pose.position.y;
-    goal.pose.position.z = msg->pose.position.z;
-    goal.pose.orientation.x = msg->pose.orientation.x;
-    goal.pose.orientation.y = msg->pose.orientation.y;
-    goal.pose.orientation.z = msg->pose.orientation.z;
-    goal.pose.orientation.w = msg->pose.orientation.w;
+    if (msg->header.frame_id != "") {
+        goal.header.frame_id = msg->header.frame_id;
+        goal.pose.position.x = msg->pose.position.x;
+        goal.pose.position.y = msg->pose.position.y;
+        goal.pose.position.z = msg->pose.position.z;
+        goal.pose.orientation.x = msg->pose.orientation.x;
+        goal.pose.orientation.y = msg->pose.orientation.y;
+        goal.pose.orientation.z = msg->pose.orientation.z;
+        goal.pose.orientation.w = msg->pose.orientation.w;
 
-    goal_tfs = tf_buffer_->lookupTransform("world", goal.header.frame_id, tf2::TimePointZero);
-    tf2::doTransform(goal, goal, goal_tfs);
-    goal_tfs.transform.translation.x = goal.pose.position.x;
-    goal_tfs.transform.translation.y = goal.pose.position.y;
-    goal_tfs.transform.translation.z = goal.pose.position.z;
-    goal_tfs.transform.rotation.x = goal.pose.orientation.x;
-    goal_tfs.transform.rotation.y = goal.pose.orientation.y;
-    goal_tfs.transform.rotation.z = goal.pose.orientation.z;
-    goal_tfs.transform.rotation.w = goal.pose.orientation.w;
-    planning();
+        // TODO check for exception
+        // goal_tfs = tf_buffer_->lookupTransform("world", goal.header.frame_id, tf2::TimePointZero);
+        // tf2::doTransform(goal, goal, goal_tfs);
+        // goal_tfs.transform.translation.x = goal.pose.position.x;
+        // goal_tfs.transform.translation.y = goal.pose.position.y;
+        // goal_tfs.transform.translation.z = goal.pose.position.z;
+        // goal_tfs.transform.rotation.x = goal.pose.orientation.x;
+        // goal_tfs.transform.rotation.y = goal.pose.orientation.y;
+        // goal_tfs.transform.rotation.z = goal.pose.orientation.z;
+        // goal_tfs.transform.rotation.w = goal.pose.orientation.w;
+        planning();
+    }
+    else {
+        RCLCPP_WARN(LOGGER, "No frame specified in the goal message. Ignoring...");
+    }
 }
 
 int main(int argc, char** argv) {
