@@ -32,7 +32,7 @@ pkill -x robot_state_publisher || true
 
 export PX4_SIM_MODEL=$model
 . ~/.bashrc
-# . /usr/share/gazebo-11/setup.sh
+. /usr/share/gazebo/setup.sh
 export GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH:~/sources/PX4-Autopilot/build/px4_sitl_rtps/build_gazebo
 export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/sources/PX4-Autopilot/Tools/sitl_gazebo/models:~/ros2_ws/src/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/sources/PX4-Autopilot/build/px4_sitl_rtps/build_gazebo
