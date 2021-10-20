@@ -40,83 +40,65 @@ private:
     std::string ref_link_;
     bool currently_planning;
     rclcpp::Node::SharedPtr node_;
-    double min_dist_threshold = 0.01;
-    // TODO
-    double min_quat_threshold = 0.01;
-    rclcpp::TimerBase::SharedPtr timer_;
     const double PLANNING_TIME_S = 25.0;
-    const double PLANNING_ATTEMPTS = 21.0;
+    const double PLANNING_ATTEMPTS = 40.0;
     const std::string PLANNING_GROUP = "uav";
+    geometry_msgs::msg::PoseStamped moveit_goal;
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-    geometry_msgs::msg::TransformStamped goal_tfs;
-    geometry_msgs::msg::PoseStamped goal, moveit_goal;
     moveit_visual_tools::MoveItVisualToolsPtr visual_tools_;
     moveit::planning_interface::MoveGroupInterface::Plan plan;
     moveit::planning_interface::MoveGroupInterfacePtr move_group_;
     std::shared_ptr<tf2_ros::TransformListener> transform_listener_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr posestamped_sub_;
 
-    void planning();
+    void planning(const geometry_msgs::msg::PoseStamped&);
     void poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr);
 };
 
-void MoveItPlanning::planning() {
+void MoveItPlanning::planning(const geometry_msgs::msg::PoseStamped& goal) {
     if (goal.header.frame_id != "" and !currently_planning) {
-        const moveit::core::JointModelGroup* joint_model_group = move_group_->getCurrentState()->getJointModelGroup(PLANNING_GROUP);
-        currently_planning = true;
-        geometry_msgs::msg::TransformStamped tfs = tf_buffer_->lookupTransform(ref_link_, goal.header.frame_id, tf2::TimePointZero);
+        try {
+            const moveit::core::JointModelGroup* joint_model_group = move_group_->getCurrentState()->getJointModelGroup(PLANNING_GROUP);
+            currently_planning = true;
+            geometry_msgs::msg::TransformStamped tfs = tf_buffer_->lookupTransform(ref_link_, goal.header.frame_id, tf2::TimePointZero);
 
-        tf2::doTransform(goal, moveit_goal, tfs);
-        // move_group_->clearPoseTargets();
-        // move_group_->clearPathConstraints();
-        std::vector<double> joint_group_positions(7);
-        joint_group_positions[0] = moveit_goal.pose.position.x;
-        joint_group_positions[1] = moveit_goal.pose.position.y;
-        joint_group_positions[2] = moveit_goal.pose.position.z;
-        joint_group_positions[3] = moveit_goal.pose.orientation.x;
-        joint_group_positions[4] = moveit_goal.pose.orientation.y;
-        joint_group_positions[5] = moveit_goal.pose.orientation.z;
-        joint_group_positions[6] = moveit_goal.pose.orientation.w;
-        RCLCPP_INFO(LOGGER, "Planning....");
-        move_group_->setJointValueTarget(joint_group_positions);
-        const bool plan_success = (move_group_->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        currently_planning = false;
-        RCLCPP_INFO(LOGGER, "=================================================================");
-        RCLCPP_INFO(LOGGER, "Plan %s", plan_success ? "SUCCEEDED" : "FAILED");
-        RCLCPP_INFO(LOGGER, "=================================================================");
-            
-        if (plan_success) {
-            visual_tools_->deleteAllMarkers();
-            visual_tools_->publishTrajectoryLine(plan.trajectory_, joint_model_group->getLinkModel("base_link"), joint_model_group, rviz_visual_tools::GREEN);
-            visual_tools_->trigger();
-            // TODO check execution status
-            move_group_->execute(plan);
+            tf2::doTransform(goal, moveit_goal, tfs);
+            move_group_->clearPoseTargets();
+            move_group_->clearPathConstraints();
+            std::vector<double> joint_group_positions(7);
+            joint_group_positions[0] = moveit_goal.pose.position.x;
+            joint_group_positions[1] = moveit_goal.pose.position.y;
+            joint_group_positions[2] = moveit_goal.pose.position.z;
+            joint_group_positions[3] = moveit_goal.pose.orientation.x;
+            joint_group_positions[4] = moveit_goal.pose.orientation.y;
+            joint_group_positions[5] = moveit_goal.pose.orientation.z;
+            joint_group_positions[6] = moveit_goal.pose.orientation.w;
+            RCLCPP_INFO(LOGGER, "Planning....");
+            move_group_->setJointValueTarget(joint_group_positions);
+            const bool plan_success = (move_group_->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            currently_planning = false;
+            RCLCPP_INFO(LOGGER, "=================================================================");
+            RCLCPP_INFO(LOGGER, "Plan %s", plan_success ? "SUCCEEDED" : "FAILED");
+            RCLCPP_INFO(LOGGER, "=================================================================");
+                
+            if (plan_success) {
+                visual_tools_->deleteAllMarkers();
+                visual_tools_->publishTrajectoryLine(plan.trajectory_, joint_model_group->getCommonRoot()->getChildLinkModel(), joint_model_group, rviz_visual_tools::GREEN);
+                visual_tools_->trigger();
+                // TODO check execution status
+                move_group_->execute(plan);
+            }
+        }
+        catch (tf2::TransformException& ex) {
+            // TODO maybe try again?
+            RCLCPP_WARN(LOGGER, ex.what());
         }
     }
 }
 
 void MoveItPlanning::poseStampedCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
     if (msg->header.frame_id != "") {
-        goal.header.frame_id = msg->header.frame_id;
-        goal.pose.position.x = msg->pose.position.x;
-        goal.pose.position.y = msg->pose.position.y;
-        goal.pose.position.z = msg->pose.position.z;
-        goal.pose.orientation.x = msg->pose.orientation.x;
-        goal.pose.orientation.y = msg->pose.orientation.y;
-        goal.pose.orientation.z = msg->pose.orientation.z;
-        goal.pose.orientation.w = msg->pose.orientation.w;
-
-        // TODO check for exception
-        // goal_tfs = tf_buffer_->lookupTransform("world", goal.header.frame_id, tf2::TimePointZero);
-        // tf2::doTransform(goal, goal, goal_tfs);
-        // goal_tfs.transform.translation.x = goal.pose.position.x;
-        // goal_tfs.transform.translation.y = goal.pose.position.y;
-        // goal_tfs.transform.translation.z = goal.pose.position.z;
-        // goal_tfs.transform.rotation.x = goal.pose.orientation.x;
-        // goal_tfs.transform.rotation.y = goal.pose.orientation.y;
-        // goal_tfs.transform.rotation.z = goal.pose.orientation.z;
-        // goal_tfs.transform.rotation.w = goal.pose.orientation.w;
-        planning();
+        planning(*msg);
     }
     else {
         RCLCPP_WARN(LOGGER, "No frame specified in the goal message. Ignoring...");
