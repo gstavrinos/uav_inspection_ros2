@@ -226,7 +226,7 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            simple_goal_publisher,
+            #  simple_goal_publisher,
             ros2_control_node,
             move_group_node,
             ned_static_tf,
