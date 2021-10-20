@@ -26,6 +26,7 @@ cd ~/ros2_ws/src
 sudo rm -rf ~/ros2_ws/src/uav_inspections_ros2
 sudo rm -rf ~/ros2_ws/src/odom_to_tf_ros2
 sudo rm -rf ~/ros2_ws/src/gazebo_ros2_control
+sudo rm -rf ~/ros2_ws/src/moveit_visual_tools
 sudo rm -rf ~/ros2_ws/build
 sudo rm -rf ~/ros2_ws/install
 sudo rm -rf ~/px4_ros2_ws/src/px4_ros_com
@@ -39,9 +40,10 @@ sudo rm -rf ~/sources/foonathan_memory_vendor
 sudo rm -rf ~/sources/PX4-Autopilot
 sudo rm -rf ~/sources/Fast-RTPS-Gen
 sudo rm -rf ~/sources/FastDDS-2.0.0
-git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_inspections_ros2
+# git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_inspections_ros2
 git clone https://github.com/gstavrinos/odom_to_tf_ros2 ~/ros2_ws/src/odom_to_tf_ros2
 git clone https://github.com/ros-simulation/gazebo_ros2_control ~/ros2_ws/src/gazebo_ros2_control
+git clone -b ros2 https://github.com/ros-planning/moveit_visual_tools ~/ros2_ws/src/moveit_visual_tools
 git clone https://github.com/PX4/px4_ros_com ~/px4_ros2_ws/src/px4_ros_com
 # git clone https://github.com/ros-planning/moveit2 -b 2.2.1 ~/moveit2_ros2_ws/src/moveit2
 git clone https://github.com/ros-planning/moveit2 ~/moveit2_ros2_ws/src/moveit2
@@ -70,11 +72,12 @@ sudo ./gradlew install
 cd ~/px4_ros2_ws/src/px4_ros_com/scripts
 sudo bash build_ros2_workspace.bash
 . ~/px4_ros2_ws/install/local_setup.sh
-cd ~/ros2_ws
-colcon build --symlink-install
 . ~/.bashrc
 cd ~/sources/PX4-Autopilot
 DONT_RUN=1 make px4_sitl_rtps gazebo
+cd ~/ros2_ws
+rosdep install -r --from-paths src --ignore-src --rosdistro galactic -y
+colcon build --symlink-install
 cd ~/moveit2_ros2_ws/src/moveit2
 git checkout 5ff36ac4855411a8eb8eac636d00ef3838d9611e
 cd ~/moveit2_ros2_ws/src/ros2_control
@@ -88,3 +91,17 @@ vcs import < moveit2/moveit2.repos
 rosdep install -r --from-paths . --ignore-src --rosdistro $ROS_DISTRO -y
 cd ~/moveit2_ros2_ws
 colcon build --event-handlers desktop_notification- status- --cmake-args -DCMAKE_BUILD_TYPE=Release
+. ~/px4_ros2_ws/install/local_setup.sh
+. ~/moveit2_ros2_ws/install/local_setup.sh
+. ~/.bashrc
+cd ~/ros2_ws/src
+vcs import < moveit_visual_tools/moveit_visual_tools.repos
+rosdep install -r --from-paths . --ignore-src --rosdistro galactic -y
+cd ~/ros2_ws
+colcon build --symlink-install
+. ~/px4_ros2_ws/install/local_setup.sh
+. ~/moveit2_ros2_ws/install/local_setup.sh
+. ~/ros2_ws/install/local_setup.sh
+. ~/.bashrc
+git clone https://github.com/gstavrinos/uav_inspection_ros2 ~/ros2_ws/src/uav_inspections_ros2
+colcon build --symlink-install
